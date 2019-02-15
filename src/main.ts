@@ -13,13 +13,28 @@ const controller = Botkit.slackbot({
 const slackConfig: Botkit.SlackSpawnConfiguration = {
     token: process.env.token || ""
 };
-controller.spawn(slackConfig).startRTM((err) => {
-    if (err) {
-        throw new Error(err);
-    }
+const bot = controller.spawn(slackConfig);
+function connect() {
+    bot.startRTM((err) => {
+        if (err) {
+            console.log("Error==>" + err)
+            throw new Error(err);
+        }
+    });
+}
+connect();
+controller.on('rtm_close', function (bot) {
+    console.log('rtm_close-->RTM connection is closed');
+    connect();
 });
 
 // say hi
 controller.hears('hi', ['direct_message', 'direct_mention', 'mention'], (bot, message) => {
     bot.reply(message, 'hello');
+});
+
+// default
+// 最後に記述してください。
+controller.hears('(.*)', ['direct_message', 'direct_mention', 'mention'], (bot, message) => {
+    bot.reply(message, 'なに??');
 });
