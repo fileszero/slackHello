@@ -12,5 +12,8 @@
     "botbuilder-adapter-slack": "^1.0.3",
     "botkit": "^4.0.2",
     "dotenv": "^8.0.0"
+  },
+  "devDependencies": {
+    "@types/dotenv": "^6.1.1"
   }
 }
