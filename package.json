@@ -9,6 +9,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "botkit": "^0.7.2"
+    "botkit": "^0.7.2",
+    "dotenv": "^8.0.0"
+  },
+  "devDependencies": {
+    "@types/dotenv": "^6.1.1"
   }
 }

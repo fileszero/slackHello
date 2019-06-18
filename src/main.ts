@@ -1,17 +1,20 @@
+import dotenv from 'dotenv';
 import * as Botkit from 'botkit';
 
-if (!process.env.token) {
+dotenv.config();
+
+if (!process.env.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN) {
     console.log('Error: Specify token in environment');
     process.exit(1);
 }
-console.log(process.env.token);
+console.log(process.env.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN);
 
 const controller = Botkit.slackbot({
     debug: false
 });
 
 const slackConfig: Botkit.SlackSpawnConfiguration = {
-    token: process.env.token || ""
+    token: process.env.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN || ""
 };
 const bot = controller.spawn(slackConfig);
 function connect() {
