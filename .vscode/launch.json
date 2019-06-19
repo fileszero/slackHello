@@ -12,7 +12,8 @@
             "program": "${workspaceFolder}/dest/main.js",
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
-            ]
+            ],
+            "console": "internalConsole"
         }
     ]
 }
