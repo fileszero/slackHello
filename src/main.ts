@@ -1,13 +1,16 @@
 import dotenv from 'dotenv';
-import { Botkit, BotkitMessage, BotkitConversation } from 'botkit';
+import * as datefns from 'date-fns';
+import { Botkit, BotkitMessage } from 'botkit';
 // import { SlackAdapter } from 'botbuilder-adapter-slack'
 import { SlackAdapter, SlackMessageTypeMiddleware, SlackBotWorker, SlackAdapterOptions } from 'botbuilder-adapter-slack';
-import { TestAdapter } from 'botbuilder';
 
 // run > ngrok http 3000 --log stdout
 // access https://api.slack.com/apps
 // open app -> Event Subscriptions -> set Request URL http://???????.ngrok.io/api/messages
 //
+// add to C:\Users\<user>\.ngrok2\ngrok.yml
+// trust_host_root_certs: true
+// root_cas: host
 
 // Botkit for Slack Class Reference
 // https://botkit.ai/docs/v4/reference/slack.html
@@ -68,7 +71,7 @@ controller.hears('(.*)', ['direct_message', 'direct_mention', 'mention'], async 
 test("STARTUP");
 
 async function test(msg: string): Promise<void> {
-    const send_message = "bot kit message : " + msg + " : " + Date.now().toString();
+    const send_message = "bot kit message : " + msg + " : " + datefns.format(Date.now(), 'YYYY/MM/DD HH:mm:ss');
     // boot_data.team_id
     // "T7W20F22G"
     // spawn a bot
