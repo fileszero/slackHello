@@ -3,10 +3,9 @@ import * as readline from 'readline';
 import dotenv from 'dotenv';
 
 import { google } from 'googleapis';
-import { OAuth2ClientOptions, OAuth2Client, Credentials } from 'google-auth-library';
-import { GetTokenResponse } from 'google-auth-library/build/src/auth/oauth2client';
-import { resolve } from 'url';
+import { OAuth2Client, Credentials } from 'google-auth-library';
 
+// downloaded ClientSecret.json file data
 interface ClientSecrets {
     installed: {
         client_id: string;
@@ -21,46 +20,46 @@ interface ClientSecrets {
 
 dotenv.config();
 
-
 // If modifying these scopes, delete token.json.
 const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
 
+///
+/// File I/O
+///
 // Load client secrets from a local file.
-async function loadClientSecrets() {
-    return new Promise<ClientSecrets>((resolve, reject) => {
-        fs.readFile(process.env.GOOGLE_CLIENT_SECRET_PATH, { encoding: "utf8" }, (err, content) => {
-            if (err) {
-                console.log('Error loading client secret file:', err);
-                reject(err);
-            }
-            resolve(JSON.parse(content) as ClientSecrets);
-        });
-    });
+function loadClientSecrets(): ClientSecrets {
+    const content = fs.readFileSync(process.env.GOOGLE_CLIENT_SECRET_PATH, { encoding: "utf8" });
+    return JSON.parse(content) as ClientSecrets;
 }
-// Authorize a client with credentials, then call the Google Calendar API.
-(async () => {
-    const client_secret = await loadClientSecrets();
-    const oAuth2Client = await authorize(client_secret);
-    await listEvents(oAuth2Client);
-})();
+
+// Store the token to disk for later program executions
+function storeToken(token: Credentials) {
+    fs.writeFileSync(process.env.GOOGLE_TOKEN_PATH, JSON.stringify(token));
+}
+
+// load if we have previously stored a token.
+function loadToken(): Credentials {
+    const token = fs.readFileSync(process.env.GOOGLE_TOKEN_PATH, { encoding: "utf8" });
+    return JSON.parse(token) as Credentials;
+}
 
 /**
  * Create an OAuth2 client with the given credentials, and then execute the
  * given callback function.
  * @param {Object} credentials The authorization client credentials.
- * @param {function} callback The callback to call with the authorized client.
  */
 async function authorize(credentials: ClientSecrets): Promise<OAuth2Client> {
     const oAuth2Client = new google.auth.OAuth2(
         credentials.installed.client_id, credentials.installed.client_secret, credentials.installed.redirect_uris[0]);
 
     // Check if we have previously stored a token.
-    const token = await loadToken().catch(async (err) => {
-        return await getAccessToken(oAuth2Client);
-    });
-    if (token) {
-        oAuth2Client.setCredentials(token);
-    }
+    let token: Credentials;
+    try {
+        token = loadToken();
+    } catch {   // no token.json
+        token = await getAccessToken(oAuth2Client);
+    };
+    oAuth2Client.setCredentials(token);
     return oAuth2Client;
 }
 
@@ -68,17 +67,16 @@ async function authorize(credentials: ClientSecrets): Promise<OAuth2Client> {
  * Get and store new token after prompting for user authorization, and then
  * execute the given callback with the authorized OAuth2 client.
  * @param {google.auth.OAuth2} oAuth2Client The OAuth2 client to get token for.
- * @param {getEventsCallback} callback The callback for the authorized client.
  */
 async function getAccessToken(oAuth2Client: OAuth2Client): Promise<Credentials> {
     const authUrl = oAuth2Client.generateAuthUrl({
         access_type: 'offline',
         scope: SCOPES,
     });
-    console.log('右記のURLをブラウザで開いてください: ', authUrl);
+    console.log('Open this URL: ', authUrl);
     var code = await new Promise<string>((resolve, reject) => {
         const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-        rl.question('表示されたコードを貼り付けてください: ', (code) => resolve(code));
+        rl.question('Paste Code: ', (code) => resolve(code));
     });
 
     const token = await oAuth2Client.getToken(code).catch((err) => {
@@ -89,35 +87,6 @@ async function getAccessToken(oAuth2Client: OAuth2Client): Promise<Credentials> 
     return token.tokens;
 }
 
-// Store the token to disk for later program executions
-async function storeToken(token: Credentials): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-        fs.writeFile(process.env.GOOGLE_TOKEN_PATH, JSON.stringify(token), (err) => {
-            if (err) {
-                console.error("storeToken failed " + err);
-                reject(err);
-            } else {
-                console.log('Token stored to', process.env.GOOGLE_TOKEN_PATH);
-                resolve();
-            }
-        });
-    });
-}
-
-// load if we have previously stored a token.
-async function loadToken(): Promise<Credentials> {
-    return new Promise<Credentials>((resolve, reject) => {
-        fs.readFile(process.env.GOOGLE_TOKEN_PATH, { encoding: "utf8" }, (err, token) => {
-            if (err) {
-                console.error("loadToken failed " + err);
-                reject(err);
-            } else {
-                const cre = JSON.parse(token) as Credentials;
-                resolve(cre);
-            }
-        });
-    });
-}
 
 /**
  * Lists the next 10 events on the user's primary calendar.
@@ -151,3 +120,11 @@ async function listEvents(auth: OAuth2Client) {
         console.log('No upcoming events found.');
     }
 }
+
+// entry point
+(async () => {
+    // Authorize a client with credentials, then call the Google Calendar API.
+    const client_secret = await loadClientSecrets();
+    const oAuth2Client = await authorize(client_secret);
+    await listEvents(oAuth2Client);
+})();
