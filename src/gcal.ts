@@ -28,18 +28,18 @@ const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
 ///
 // Load client secrets from a local file.
 function loadClientSecrets(): ClientSecrets {
-    const content = fs.readFileSync(process.env.GOOGLE_CLIENT_SECRET_PATH, { encoding: "utf8" });
+    const content = fs.readFileSync(process.env.GOOGLE_CLIENT_SECRET_PATH || "", { encoding: "utf8" });
     return JSON.parse(content) as ClientSecrets;
 }
 
 // Store the token to disk for later program executions
 function storeToken(token: Credentials) {
-    fs.writeFileSync(process.env.GOOGLE_TOKEN_PATH, JSON.stringify(token));
+    fs.writeFileSync(process.env.GOOGLE_TOKEN_PATH || "", JSON.stringify(token));
 }
 
 // load if we have previously stored a token.
 function loadToken(): Credentials {
-    const token = fs.readFileSync(process.env.GOOGLE_TOKEN_PATH, { encoding: "utf8" });
+    const token = fs.readFileSync(process.env.GOOGLE_TOKEN_PATH || "", { encoding: "utf8" });
     return JSON.parse(token) as Credentials;
 }
 
