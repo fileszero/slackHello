@@ -120,7 +120,7 @@ dotenv.config();
     const message = sorted_events.map((event, i) => {
         let start = event.isAllDay ? datefns.format(event.startAt, "MM-DD") + " ALL" : datefns.format(event.startAt, "MM-DD HH:mm");
         start = (start + ' '.repeat(12)).substr(0, 12);
-        return (`${start} - \`${event.summary}\``;
+        return (`${start} - \`${event.summary}\``);
     }).join("\n");
     console.log(JSON.stringify(message));
 
