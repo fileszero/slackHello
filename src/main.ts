@@ -83,6 +83,9 @@ async function test(msg: string): Promise<void> {
     // await bot.startConversationWithUser("U7W20F25A");
     //await bot.say("test");
     // const im_res = await bot.api.im.open({ user: "U7W20F25A" }) as any;
+
+    // https://api.slack.com/docs/messages/builder
+    // {"text": "_Itaric_,*Bold*,`Code`,```Formated```,\n>ref must after \\n " }
     const message: Partial<BotkitMessage> = {
         text: send_message,
         channel: "C7W0K6P5G",    // #general
