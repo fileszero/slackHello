@@ -7,8 +7,9 @@
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
 
-# Environment valuse
+# Environment values
 # ENV : base64 encoded .env file
+# GOOGLE_API_TOKEN : base64 encoded ./data/token.json
 
 version: 2
 jobs:
@@ -30,12 +31,14 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Decode dotenv file
+          name: Decode env files
           command: |
             # echo ${ENV}
             echo ${ENV} | base64 --decode > .env
-            pwd
-            cat .env
+            echo ${GOOGLE_API_TOKEN}| base64 --decode > ./data/token.json
+            # pwd
+            # cat .env
+            ls -la ./data
 
       # Download and cache dependencies
       - restore_cache:
