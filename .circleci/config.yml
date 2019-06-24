@@ -9,6 +9,9 @@
 version: 2
 jobs:
   build:
+    branches:
+      only:
+        - master
     docker:
       # specify the version you desire here
       - image: circleci/node:10.13.0 #node:7.10 #https://circleci.com/docs/2.0/docker-image-tags.json
