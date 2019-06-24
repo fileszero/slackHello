@@ -1,10 +1,4 @@
 
-import * as datefns from 'date-fns';
-import { Botkit, BotkitMessage } from 'botkit';
-// import { SlackAdapter } from 'botbuilder-adapter-slack'
-import { SlackAdapter, SlackMessageTypeMiddleware, SlackBotWorker, SlackAdapterOptions } from 'botbuilder-adapter-slack';
-import { GoogleCalendar, CalendarEvent } from './gcal';
-
 import * as slackBot from './slackBot'
 
 const controller = slackBot.controller;
