@@ -49,7 +49,7 @@ jobs:
       - run:
           name: Decode dotenv file
           command: |
-            echo $ENV | base64 --decode > .env
+            echo ${ENV} | base64 --decode > .env
             pwd
             cat .env
       # - deploy:
