@@ -6,12 +6,16 @@
 #
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
+
+# Environment valuse
+# ENV : base64 encoded .env file
+
 version: 2
 jobs:
   build:
-    branches:
-      only:
-        - master
+    # branches:
+    #   only:
+    #     - master
     docker:
       # specify the version you desire here
       - image: circleci/node:10.13.0 #node:7.10 #https://circleci.com/docs/2.0/docker-image-tags.json
@@ -42,6 +46,12 @@ jobs:
 
       # run tests!
       - run: yarn build
+      - run:
+          name: Decode dotenv file
+          command: |
+            echo $ENV | base64 --decode > .env
+            pwd
+            cat .env
       # - deploy:
       #     name: deployment
       #     command: |
