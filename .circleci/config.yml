@@ -42,3 +42,11 @@ jobs:
 
       # run tests!
       - run: yarn build
+      # - deploy:
+      #     name: deployment
+      #     command: |
+      #       ssh-keyscan ${HOST_NAME} >> ~/.ssh/known_hosts
+      #       sudo apt install -y rsync
+      #       ssh ${USER_NAME}@${HOST_NAME} "service ${APP_NAME} stop" # サービスを停止する
+      #       rsync -vc ${BUILD_APP} ${USER_NAME}@${HOST_NAME}:${APP_DIR} # 成果物をデプロイする
+      #       ssh ${USER_NAME}@${HOST_NAME} "service ${APP_NAME} start" # サービスを起動する
