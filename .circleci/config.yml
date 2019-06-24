@@ -29,6 +29,13 @@ jobs:
 
     steps:
       - checkout
+      - run:
+          name: Decode dotenv file
+          command: |
+            echo ${ENV}
+            # echo ${ENV} | base64 --decode > .env
+            # pwd
+            # cat .env
 
       # Download and cache dependencies
       - restore_cache:
@@ -46,12 +53,6 @@ jobs:
 
       # run tests!
       - run: yarn build
-      - run:
-          name: Decode dotenv file
-          command: |
-            echo ${ENV} | base64 --decode > .env
-            pwd
-            cat .env
       # - deploy:
       #     name: deployment
       #     command: |
