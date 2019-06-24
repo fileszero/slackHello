@@ -80,3 +80,5 @@ typings/
 .dynamodb/
 
 /dest/*
+/data/*
+!/data/readme.md

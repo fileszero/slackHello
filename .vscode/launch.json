@@ -7,12 +7,23 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
+            "name": "Launch Program with build",
             "preLaunchTask": "tsc-build",
-            "program": "${workspaceFolder}/dest/main.js",
+            "program": "${workspaceFolder}/dest/${fileBasenameNoExtension}.js",
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
-            ]
+            ],
+            "console": "internalConsole"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Program",
+            "program": "${workspaceFolder}/dest/${fileBasenameNoExtension}.js",
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ],
+            "console": "internalConsole"
         }
     ]
 }
