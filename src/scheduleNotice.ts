@@ -33,7 +33,7 @@ async function GetTodaysCalender() {
 
 async function sendNotice(controller: Botkit, msg: string): Promise<void> {
     let bot: SlackBotWorker = await controller.spawn("PROACTIVE") as SlackBotWorker;
-    //await bot.startPrivateConversation("U7W20F25A"); //  function works only on platforms with multiple channels.    // fileszero
+    await bot.startPrivateConversation("U7W20F25A"); //  function works only on platforms with multiple channels.    // fileszero
     // await bot.startPrivateConversation("@fileszero");
     // await bot.startPrivateConversation("D7WSFRVRC"); //  function works only on platforms with multiple channels.
     // await bot.startPrivateConversation("UKEG6SQP3");    // cozyjpn
@@ -46,7 +46,7 @@ async function sendNotice(controller: Botkit, msg: string): Promise<void> {
 
     // await bot.startConversationWithUser("U7W20F25A");    // fileszero user id
     // https://api.slack.com/team/files.eq.zero
-    await bot.startConversationWithUser("files.eq.zero");
+    // await bot.startConversationWithUser("files.eq.zero");
     const bmsg: Partial<BotkitMessage> = {
         // channel: "D7WSFRVRC",
         // channel: "@fileszero",
@@ -93,9 +93,9 @@ async function chatpostMessage() {
 // eotry point
 (async () => {
 
-    await chatpostMessage();
-    // const controller = slackBot.controller;
-    // // let message = await GetTodaysCalender();
-    // sendNotice(controller, "TEST");
+    // await chatpostMessage();
+    const controller = slackBot.controller;
+    let message = await GetTodaysCalender();
+    sendNotice(controller, message);
     slackBot.controller.shutdown();
 })();
