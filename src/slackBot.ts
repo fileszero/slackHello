@@ -29,9 +29,11 @@ const slackOption: SlackAdapterOptions = {
     botToken: process.env.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN,    // https://botkit.ai/docs/v4/platforms/slack.html#multi-team-support
     redirectUri: process.env.SLACK_REDIRECTURI || "",
 };
-const adapter = new SlackAdapter(slackOption).use(new SlackMessageTypeMiddleware());
 
-export const controller = new Botkit({
+export const adapter = new SlackAdapter(slackOption).use(new SlackMessageTypeMiddleware());
+
+export const controller: Botkit = new Botkit({
     adapter: adapter
 });
+
 
