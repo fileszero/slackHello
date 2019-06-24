@@ -69,5 +69,5 @@ jobs:
             ssh-keyscan -p ${HOST_PORT} ${HOST_NAME} >> ~/.ssh/known_hosts
             sudo apt install -y rsync
             # ssh ${USER_NAME}@${HOST_NAME} "service ${APP_NAME} stop" # サービスを停止する
-            rsync -e "ssh -p ${HOST_PORT}" -avc  ~/repo ${USER_NAME}@${HOST_NAME}:${HOST_APPDIR} # 成果物をデプロイする
+            rsync -e "ssh -p ${HOST_PORT}" -avc  ~/repo/ ${USER_NAME}@${HOST_NAME}:${HOST_APPDIR} # 成果物をデプロイする
       #       ssh ${USER_NAME}@${HOST_NAME} "service ${APP_NAME} start" # サービスを起動する
