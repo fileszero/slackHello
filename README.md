@@ -10,10 +10,3 @@ https://?????.slack.com/apps/search?q=bots
 > node dest\main.js
 ```
 
-### crontab sample
-
-```
-15 6 * * * node <path to project>/dest/scheduleNotice.js
-
-```
-command will be ```% crontab ~/.crontab```

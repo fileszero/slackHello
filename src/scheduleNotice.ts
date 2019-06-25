@@ -6,25 +6,33 @@ import * as datefns from 'date-fns';
 import { WebAPICallOptions } from '@slack/client';
 
 
-async function GetTodaysCalender() {
-    const gcal = new GoogleCalendar(process.env.GOOGLE_CLIENT_SECRET_PATH || "", process.env.GOOGLE_TOKEN_PATH || "")
+function compareCalendarEvent(a: CalendarEvent, b: CalendarEvent) {
+    return a.startAt.getTime() - b.startAt.getTime();
+}
+
+function eventToString(event: CalendarEvent) {
+    let start = event.isAllDay ? datefns.format(event.startAt, "MM-DD") + " ALL" : datefns.format(event.startAt, "MM-DD HH:mm");
+    start = (start + ' '.repeat(12)).substr(0, 12);
+    return (`${start} - \`${event.summary}\``);
+}
+
+function eventArrayToString(events: CalendarEvent[]) {
+    return events.sort(compareCalendarEvent).map(eventToString).join("\n");
+}
+
+async function GetCalenderMessage(offsetToday: 0 | 1) {
+    const name_of_days = ["今日", "明日"];
     // Authorize a client with credentials, then call the Google Calendar API.
-    const compEvent = (a: CalendarEvent, b: CalendarEvent) => a.startAt.getTime() - b.startAt.getTime();
-    const eventToString = (event: CalendarEvent) => {
-        let start = event.isAllDay ? datefns.format(event.startAt, "MM-DD") + " ALL" : datefns.format(event.startAt, "MM-DD HH:mm");
-        start = (start + ' '.repeat(12)).substr(0, 12);
-        return (`${start} - \`${event.summary}\``);
-    }
+    const gcal = new GoogleCalendar(process.env.GOOGLE_CLIENT_SECRET_PATH || "", process.env.GOOGLE_TOKEN_PATH || "")
 
-
-    const todays_events = (await gcal.listEvents(0, 1)).sort(compEvent).map(eventToString).join("\n");
+    const events = eventArrayToString(await gcal.listEvents(offsetToday, 1));
     // const tomorrow_events = (await gcal.listEvents(1, 1)).sort(compEvent).map(eventToString).join("\n");
 
     let message = "";
-    if (todays_events) {
-        message += "今日の予定は\n" + todays_events + "\nです。"
+    if (events) {
+        message += name_of_days[offsetToday] + "の予定は\n" + events + "\nです。"
     } else {
-        message += "今日の予定は *ありません* 。"
+        message += name_of_days[offsetToday] + "の予定は *ありません* 。"
     }
 
     return message;
@@ -90,12 +98,14 @@ async function chatpostMessage() {
     // const msg_response = await api.apiCall("chat.postMessage");
 
 }
-// eotry point
-(async () => {
 
+export async function sendScheduleNotice(controller: Botkit) {
     // await chatpostMessage();
-    const controller = slackBot.controller;
-    let message = await GetTodaysCalender();
+    let offsetToday: 0 | 1 = 0;
+    const now = new Date();
+    if (now.getHours() > 12) {  // 午後は明日の予定を出力
+        offsetToday = 1;
+    }
+    let message = await GetCalenderMessage(offsetToday);
     sendNotice(controller, message);
-    slackBot.controller.shutdown();
-})();
+}
