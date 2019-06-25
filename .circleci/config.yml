@@ -69,7 +69,8 @@ jobs:
             ssh-keyscan -p ${HOST_PORT} ${HOST_NAME} >> ~/.ssh/known_hosts
             sudo apt install -y rsync
             ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "node -v && npm -v" #
-            ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "n lts" # re-install npm
+            ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "sudo npm uninstall -g npm"
+            ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "sudo n lts" # re-install npm
             ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "node -v && npm -v" #
             ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "npm install forever -g"
             ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "cd ${HOST_APPDIR} && forever stop ./dest/main.js" # stop service
