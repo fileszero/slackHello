@@ -10,3 +10,4 @@ https://?????.slack.com/apps/search?q=bots
 > node dest\main.js
 ```
 
+npm install forever -g
