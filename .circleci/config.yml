@@ -68,8 +68,8 @@ jobs:
           command: |
             ssh-keyscan -p ${HOST_PORT} ${HOST_NAME} >> ~/.ssh/known_hosts
             sudo apt install -y rsync
-            ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "sudo apt purge -y nodejs npm"
-            ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "sudo npm install forever -g"
+            # ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "sudo apt purge -y nodejs npm"
+            ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "npm install forever -g"
             ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "cd ${HOST_APPDIR} && forever stop ./dest/main.js" # stop service
             rsync -e "ssh -p ${HOST_PORT}" -avc  ~/repo/ ${USER_NAME}@${HOST_NAME}:${HOST_APPDIR} # deploy
             ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "cd ${HOST_APPDIR} && forever start ./dest/main.js" # start service
