@@ -72,4 +72,4 @@ jobs:
             #ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "forever stop ${HOST_APPDIR}/dest/main.js" # stop service
             rsync -e "ssh -p ${HOST_PORT}" -avc  ~/repo/ ${USER_NAME}@${HOST_NAME}:${HOST_APPDIR} # deploy
             #ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "forever start ${HOST_APPDIR}/dest/main.js" # start service
-            ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "node ${HOST_APPDIR}/dest/main.js" # start service
+            ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "cd ${HOST_APPDIR} && node ./dest/main.js" # start service
