@@ -62,7 +62,7 @@ cron.schedule(CRON_EVERY_HALFDAY, async () => {
 })
 
 cron.schedule(CRON_EVERY_5MINUTE, async () => {
-    console.log("sendScheduleNotice CRON_EVERY_HALFDAY");
+    console.log("sendRainNotice CRON_EVERY_5MINUTE");
     const message = await sendRainNotice();
     if (message) {
         slackBot.sendDirectMessage(controller, process.env.DM_TARGET || '', message);

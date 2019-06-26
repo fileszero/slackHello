@@ -109,5 +109,6 @@ export async function sendRainNotice(): Promise<string> {
     } else {
         console.log("no rain")
     }
+    return "";
 }
 
