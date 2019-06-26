@@ -36,4 +36,10 @@ export const controller: Botkit = new Botkit({
     adapter: adapter
 });
 
+export async function sendDirectMessage(controller: Botkit, userId: string, msg: string): Promise<void> {
+    let bot: SlackBotWorker = await controller.spawn("PROACTIVE") as SlackBotWorker;
+    await bot.startPrivateConversation(userId); //  function works only on platforms with multiple channels.    // fileszero
+    await bot.say(msg);
+}
+
 

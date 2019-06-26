@@ -39,67 +39,7 @@ async function GetCalenderMessage(offsetToday: 0 | 1) {
 
 }
 
-async function sendNotice(controller: Botkit, msg: string): Promise<void> {
-    let bot: SlackBotWorker = await controller.spawn("PROACTIVE") as SlackBotWorker;
-    await bot.startPrivateConversation("U7W20F25A"); //  function works only on platforms with multiple channels.    // fileszero
-    // await bot.startPrivateConversation("@fileszero");
-    // await bot.startPrivateConversation("D7WSFRVRC"); //  function works only on platforms with multiple channels.
-    // await bot.startPrivateConversation("UKEG6SQP3");    // cozyjpn
-
-    // await bot.startConversationInChannel("D7WSFRVRC", "DKN1KEEKA");
-    // await bot.startConversationInChannel("C7W0K6P5G", ""); // general
-    // await bot.startConversationInChannel("U7W20F25A", ""); // fileszero user id
-    // await bot.startConversationInChannel("D7WSFRVRC", ""); // fileszero private channel
-    // await bot.startConversationWithUser("D7WSFRVRC");
-
-    // await bot.startConversationWithUser("U7W20F25A");    // fileszero user id
-    // https://api.slack.com/team/files.eq.zero
-    // await bot.startConversationWithUser("files.eq.zero");
-    const bmsg: Partial<BotkitMessage> = {
-        // channel: "D7WSFRVRC",
-        // channel: "@fileszero",
-        // user: "U7W20F25A",
-        user: "@fileszero",
-        text: msg
-    }
-    // await bot.say(bmsg);
-    await bot.say(msg);
-}
-
-async function chatpostMessage() {
-    const api = await slackBot.adapter.getAPI({});
-    console.log(api.token);
-    const im_open_opt: WebAPICallOptions = {
-        token: api.token,
-        user: 'U7W20F25A',
-    };
-    const im_open_response = await api.apiCall("im.open", im_open_opt) as any;
-
-    // https://api.slack.com/methods
-    // const response = await api.apiCall("api.test");
-    // "D7WSFRVRC", // // fileszero private channel
-    // "U7W20F25A", ""); // fileszero user id
-    const api_opt: WebAPICallOptions = {
-        token: api.token,
-        channel: im_open_response.channel.id,   // 'D7WSFRVRC',
-        as_user: true,
-        text: "Hello",
-        // user: 'U7W20F25A'
-    };
-    // https://api.slack.com/methods/chat.postMessage#channels  Post to an IM channel
-    // How to send direct messages to a user as app in app channel
-    // https://stackoverflow.com/questions/47753834/how-to-send-direct-messages-to-a-user-as-app-in-app-channel
-    //const response = await api.apiCall("chat.meMessage", api_opt);  //https://qiita.com/masatomix/items/56fc2024e383875cca1a
-    const response = await api.apiCall("chat.postMessage", api_opt);  //https://qiita.com/masatomix/items/56fc2024e383875cca1a
-
-    // https://api.slack.com/docs/working-with-workspace-tokens#single_channel_authorizations
-
-    console.log(JSON.stringify(response));
-    // const msg_response = await api.apiCall("chat.postMessage");
-
-}
-
-export async function sendScheduleNotice(controller: Botkit) {
+export async function getScheduleNotice(): Promise<string> {
     // await chatpostMessage();
     let offsetToday: 0 | 1 = 0;
     const now = new Date();
@@ -107,5 +47,5 @@ export async function sendScheduleNotice(controller: Botkit) {
         offsetToday = 1;
     }
     let message = await GetCalenderMessage(offsetToday);
-    sendNotice(controller, message);
+    return message;
 }

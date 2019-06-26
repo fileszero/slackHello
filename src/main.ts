@@ -1,7 +1,8 @@
 
 import * as cron from 'node-cron';
 import * as slackBot from './slackBot'
-import { sendScheduleNotice } from './scheduleNotice';
+import { getScheduleNotice } from './scheduleNotice';
+import { sendRainNotice } from './yahooWeather';
 
 const controller = slackBot.controller;
 
@@ -51,8 +52,22 @@ const CRON_EVERY_5MINUTE = "*/5 * * * *"
 const CRON_EVERY_MORNING = "5 6 * * *"
 const CRON_EVERY_EVENING = "5 18 * * *"
 const CRON_EVERY_HALFDAY = "5 6,18 * * *"
-cron.schedule(CRON_EVERY_HALFDAY, () => {
+cron.schedule(CRON_EVERY_HALFDAY, async () => {
     console.log("sendScheduleNotice CRON_EVERY_HALFDAY");
-    sendScheduleNotice(controller);
+    const message = await getScheduleNotice();
+    if (message) {
+        slackBot.sendDirectMessage(controller, process.env.DM_TARGET || '', message);
+    }
+
 })
-sendScheduleNotice(controller);
+
+cron.schedule(CRON_EVERY_5MINUTE, async () => {
+    console.log("sendScheduleNotice CRON_EVERY_HALFDAY");
+    const message = await sendRainNotice();
+    if (message) {
+        slackBot.sendDirectMessage(controller, process.env.DM_TARGET || '', message);
+    }
+
+})
+
+slackBot.sendDirectMessage(controller, process.env.DM_TARGET || '', "bot started");
