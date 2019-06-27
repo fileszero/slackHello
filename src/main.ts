@@ -72,6 +72,13 @@ cron.schedule(CRON_EVERY_5MINUTE, async () => {
 
 (async () => {
     slackBot.sendDirectMessage(controller, process.env.DM_TARGET || '', "bot started");
+
     // var msg = [":sunny:", ":rain_0_1:", ":rain_1_3:", ":rain_4_10:", ":rain_11_20:", ":rain_21:"].join(" ");
     // slackBot.sendDirectMessage(controller, process.env.DM_TARGET || '', "テスト\n" + msg);
+
+    // const message = await sendRainNotice();
+    // if (message) {
+    //     slackBot.sendDirectMessage(controller, process.env.DM_TARGET || '', message);
+    // }
+
 })();

@@ -92,7 +92,8 @@ export async function sendRainNotice(): Promise<string> {
     const observations = wz.Feature[0].Property.WeatherList.Weather.filter((w) => w.Type == "observation");
     const forecast = wz.Feature[0].Property.WeatherList.Weather.filter((w) => w.Type == "forecast");
     const current = forecast[0];    //observations[observations.length - 1];
-    // notice = "willRain";
+    // notice = "willRain"; //debug
+    // forecast[3].Rainfall = 0.1; //debug
     if (current.Rainfall == 0.0) {    // 今晴れてる
         const rain = forecast.find((f) => f.Rainfall > 0.0);
         if (rain && notice != "willRain") {
