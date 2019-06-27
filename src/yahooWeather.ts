@@ -81,6 +81,7 @@ async function getWeather(location: WeatherLocation): Promise<WeatherResult> {
 
 
 let notice: "willRain" | "willSunny" | "stay" = 'stay';
+const rain_levels = [":sunny:", ":rain_0_1:", ":rain_1_3:", ":rain_4_10:", ":rain_11_20:", ":rain_21:"];
 export async function sendRainNotice(): Promise<string> {
     const location: WeatherLocation = {
         name: "泉区",
@@ -94,8 +95,15 @@ export async function sendRainNotice(): Promise<string> {
     if (current.Rainfall == 0.0) {    // 今晴れてる
         const rain = forecast.find((f) => f.Rainfall > 0.0);
         if (rain && notice != "willRain") {
-            [":closed_umbrella:", ":umbrella:", ":umbrella_with_rain_drops:"]
-            message = location.name + "で、もうすぐ雨が降りそうです";
+            const levels = forecast.map((f) => {
+                if (f.Rainfall == 0) return rain_levels[0];
+                if (f.Rainfall < 1) return rain_levels[1];
+                if (f.Rainfall < 3) return rain_levels[2];
+                if (f.Rainfall < 10) return rain_levels[3];
+                if (f.Rainfall < 20) return rain_levels[4];
+                return rain_levels[5];
+            })
+            message = location.name + "で、もうすぐ雨が降りそうです\n" + levels.join(" ");
             notice = "willRain"
         } else if (!rain && notice == "willRain") {
             message = "やっぱり降らなさそうです";
