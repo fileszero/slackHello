@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import { SlackAdapter, SlackMessageTypeMiddleware, SlackBotWorker, SlackAdapterOptions } from 'botbuilder-adapter-slack';
-import { Botkit } from 'botkit';
+import { Botkit, BotkitMessage } from 'botkit';
 
 // run > ngrok http 3000 --log stdout
 // access https://api.slack.com/apps
@@ -36,10 +36,19 @@ export const controller: Botkit = new Botkit({
     adapter: adapter
 });
 
-export async function sendDirectMessage(controller: Botkit, userId: string, msg: string): Promise<void> {
+export async function sendDirectMessage(controller: Botkit, userId: string, msg: string): Promise<{ activity: any, bot: SlackBotWorker }> {
     let bot: SlackBotWorker = await controller.spawn("PROACTIVE") as SlackBotWorker;
     await bot.startPrivateConversation(userId); //  function works only on platforms with multiple channels.    // fileszero
-    await bot.say(msg);
+    return { activity: await bot.say(msg), bot: bot };
 }
 
+export async function sendMessage(controller: Botkit, channel: string, msg: string): Promise<{ activity: any, bot: SlackBotWorker }> {
+    let bot: SlackBotWorker = await controller.spawn("PROACTIVE") as SlackBotWorker;
+    await bot.startConversationInChannel(channel, ""); //  function works only on platforms with multiple channels.    // fileszero
+    const bot_msg: Partial<BotkitMessage> = {
+        channel: channel,
+        text: msg
+    };
+    return { activity: await bot.say(bot_msg), bot: bot };
+}
 

@@ -47,27 +47,22 @@ function unifiedToSlack(text: string) {
     unified = emoji.softbankToUnified(unified);
     // unified = unifiedToSlack(unified);
     const controller = slackBot.controller;
-    let bot: SlackBotWorker = await controller.spawn("PROACTIVE") as SlackBotWorker;
-    await bot.startPrivateConversation('U7W20F25A'); //  function works only on platforms with multiple channels.    // fileszero
-    const message = {
-        text: "アタッチのテスト",
-    };
-    console.log(JSON.stringify(message));
-    const thread = await bot.say(unified);
+    const CHANNEL = "GKJE67PGC";    // prvatetest:GKJE67PGC // fileszero:U7W20F25A
+    const thread = await slackBot.sendMessage(controller, CHANNEL, unified);
     if (mail_data.attachments) {
         //https://qiita.com/stkdev/items/992921572eefc7de4ad8
         const attachments = await Promise.all(mail_data.attachments.map(async (f) => {
             // var image = 'data:' + f.contentType + ";base64," + f.content.toString('base64');
             // f.content.toString(image);
-            const upload = await bot.api.files.upload({
+            const upload = await thread.bot.api.files.upload({
                 // https://api.slack.com/methods/files.upload
                 filename: f.filename,
                 title: f.filename,
                 initial_comment: "アタッチ",
                 file: f.content,
-                channels: 'U7W20F25A',   // general: 'C7W0K6P5G'
-                thread_ts: thread.id,
-                filetype: 'png'  //https://api.slack.com/types/file#file_types
+                channels: CHANNEL,   // general: 'C7W0K6P5G'
+                thread_ts: thread.activity.id,
+                // filetype: 'png'  //https://api.slack.com/types/file#file_types
             });
         }));
     }
