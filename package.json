@@ -15,11 +15,17 @@
     "botkit": "^4.0.2",
     "date-fns": "^1.30.1",
     "dotenv": "^8.0.0",
+    "emoji": "^0.3.2",
     "googleapis": "^39.2.0",
+    "iconv": "^2.3.4",
+    "imap-simple": "^4.3.0",
+    "mailparser": "^2.7.1",
     "node-cron": "^2.0.3"
   },
   "devDependencies": {
     "@types/dotenv": "^6.1.1",
+    "@types/iconv": "^2.1.16",
+    "@types/imap-simple": "^4.2.1",
     "@types/node-cron": "^2.0.2",
     "typescript": "^3.5.2"
   }
