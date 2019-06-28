@@ -1,0 +1,60 @@
+{
+  "_from": "@types/mailparser",
+  "_id": "@types/mailparser@2.4.0",
+  "_inBundle": false,
+  "_integrity": "sha512-0djQXc+j21C/gnj/l2TDKG4gzhcRcIGxmT9EfHO+j8Qdi2MUFoDUWfa0oLlvC++QyBFS1+k9ZZiGwZNpHNfYmg==",
+  "_location": "/@types/mailparser",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "@types/mailparser",
+    "name": "@types/mailparser",
+    "escapedName": "@types%2fmailparser",
+    "scope": "@types",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#DEV:/",
+    "#USER"
+  ],
+  "_resolved": "https://registry.npmjs.org/@types/mailparser/-/mailparser-2.4.0.tgz",
+  "_shasum": "685b3c3c23c93000695c06f276e430860ed3b96c",
+  "_spec": "@types/mailparser",
+  "_where": "C:\\usr\\src\\slackHello",
+  "bugs": {
+    "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/issues"
+  },
+  "bundleDependencies": false,
+  "contributors": [
+    {
+      "name": "Peter Snider",
+      "url": "https://github.com/psnider"
+    },
+    {
+      "name": "Andrey Volynkin",
+      "url": "https://github.com/Avol-V"
+    }
+  ],
+  "dependencies": {
+    "@types/node": "*"
+  },
+  "deprecated": false,
+  "description": "TypeScript definitions for mailparser",
+  "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped#readme",
+  "license": "MIT",
+  "main": "",
+  "name": "@types/mailparser",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+    "directory": "types/mailparser"
+  },
+  "scripts": {},
+  "typeScriptVersion": "2.0",
+  "types": "index",
+  "typesPublisherContentHash": "af27023a7640ab9c2df26653d669900fdf04cfb8203e614d9f64a76901bae772",
+  "version": "2.4.0"
+}
