@@ -18,18 +18,6 @@ async function readStdin(): Promise<Buffer> {
     });
 }
 
-async function readStdin2(): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-        let text = "";
-        fs.readFile(0, (err, data) => {
-            if (err) {
-                reject(err);
-                return;
-            }
-            resolve(data);
-        })
-    });
-}
 
 function unifiedToSlack(text: string) {
     return text.replace(emoji.EMOJI_RE(), function (_, m) {
@@ -56,12 +44,11 @@ function unifiedToSlack(text: string) {
     unified = emoji.kddiToUnified(unified);
     unified = emoji.softbankToUnified(unified);
     // unified = unifiedToSlack(unified);
-    const controller = slackBot.controller;
-    slackBot.sendDirectMessage(controller, process.env.DM_TARGET || '', unified);
+    // const controller = slackBot.controller;
+    // slackBot.sendDirectMessage(controller, process.env.DM_TARGET || '', unified);
     if (mail_data.attachments) {
         mail_data.attachments.map((f) => {
             console.log(f.filename);
-            f.content
         });
     }
     console.log(unified);
