@@ -294,6 +294,7 @@ export type Source = Buffer | Stream | string;
  */
 export interface SimpleParserOptions extends StreamModule.TransformOptions {
 	keepCidLinks?: boolean;
+	Iconv?: any;
 }
 
 /**
