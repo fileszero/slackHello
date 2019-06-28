@@ -5,17 +5,29 @@ import * as slackBot from './slackBot'
 
 const Iconv = require('iconv').Iconv;
 
-import { toUnicode } from 'punycode';
-async function readStdin(): Promise<string> {
+async function readStdin(): Promise<Buffer> {
     return new Promise((resolve, reject) => {
-        let text = "";
+        const data: any[] = [];
         process.stdin.on('data', (chunk) => {
-            text += chunk;
+            data.push(chunk);
         });
 
         process.stdin.on('end', () => {
-            resolve(text);
+            resolve(Buffer.concat(data));
         });
+    });
+}
+
+async function readStdin2(): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+        let text = "";
+        fs.readFile(0, (err, data) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(data);
+        })
     });
 }
 
@@ -27,8 +39,9 @@ function unifiedToSlack(text: string) {
     });
 }
 (async () => {
-    // const text = await readStdin();
-    const text = fs.readFileSync(0);    //type .\data\original_msg.eml | node ./dest/mailConvert.js
+    const text = await readStdin();
+    // const text = await readStdin2()
+    //const text = fs.readFileSync(0);    //type .\data\original_msg.eml | node ./dest/mailConvert.js
     // .\data\iso-2022-jp.eml
     // const text = fs.readFileSync('./data/iso-2022-jp.eml', {});
 
@@ -37,7 +50,7 @@ function unifiedToSlack(text: string) {
         //encoding: "sjis"
     };
     const mail_data = await mailparser.simpleParser(text, { Iconv: Iconv });
-    console.log(mail_data);
+    // console.log(mail_data);
     // if (mail_data.from.value[0]["address"]) {    }
     let unified = emoji.docomoToUnified(mail_data.text);
     unified = emoji.kddiToUnified(unified);
@@ -45,6 +58,11 @@ function unifiedToSlack(text: string) {
     // unified = unifiedToSlack(unified);
     const controller = slackBot.controller;
     slackBot.sendDirectMessage(controller, process.env.DM_TARGET || '', unified);
-
+    if (mail_data.attachments) {
+        mail_data.attachments.map((f) => {
+            console.log(f.filename);
+            f.content
+        });
+    }
     console.log(unified);
 })();
