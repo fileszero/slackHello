@@ -1,6 +1,8 @@
 import * as emoji from 'emoji';
 import * as mailparser from 'mailparser';
 import * as fs from 'fs';
+import * as slackBot from './slackBot'
+
 const Iconv = require('iconv').Iconv;
 
 import { toUnicode } from 'punycode';
@@ -17,7 +19,13 @@ async function readStdin(): Promise<string> {
     });
 }
 
+function unifiedToSlack(text: string) {
+    return text.replace(emoji.EMOJI_RE(), function (_, m) {
+        var em = emoji.EMOJI_MAP[m];
 
+        return ': ' + em[1].replace(' ', '_') + ' :';
+    });
+}
 (async () => {
     // const text = await readStdin();
     const text = fs.readFileSync(0);    //type .\data\original_msg.eml | node ./dest/mailConvert.js
@@ -30,14 +38,13 @@ async function readStdin(): Promise<string> {
     };
     const mail_data = await mailparser.simpleParser(text, { Iconv: Iconv });
     console.log(mail_data);
-    // let charset: string | undefined = undefined;
-    // try {
-    //     charset = (mail_data.headers.get("content-type") as any).params.charset;
-    // } catch{ }
-    // if (charset) {
-    //     const iconv = new Iconv(charset, 'UTF-8');
-    //     mail_data.text = iconv.convert(mail_data.text);
-    // }
-    const unified = emoji.docomoToUnified(mail_data.text);
+    // if (mail_data.from.value[0]["address"]) {    }
+    let unified = emoji.docomoToUnified(mail_data.text);
+    unified = emoji.kddiToUnified(unified);
+    unified = emoji.softbankToUnified(unified);
+    // unified = unifiedToSlack(unified);
+    const controller = slackBot.controller;
+    slackBot.sendDirectMessage(controller, process.env.DM_TARGET || '', unified);
+
     console.log(unified);
 })();
