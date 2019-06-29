@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import { SlackAdapter, SlackMessageTypeMiddleware, SlackBotWorker, SlackAdapterOptions } from 'botbuilder-adapter-slack';
-import { Botkit, BotkitMessage } from 'botkit';
+import { Botkit, BotkitMessage, BotkitConfiguration } from 'botkit';
 
 // run > ngrok http 3000 --log stdout
 // access https://api.slack.com/apps
@@ -30,25 +30,29 @@ const slackOption: SlackAdapterOptions = {
     redirectUri: process.env.SLACK_REDIRECTURI || "",
 };
 
-export const adapter = new SlackAdapter(slackOption).use(new SlackMessageTypeMiddleware());
+export class slackBot {
+    private adapter: SlackAdapter;
+    public controller: Botkit;
+    constructor(config: BotkitConfiguration) {
+        this.adapter = new SlackAdapter(slackOption).use(new SlackMessageTypeMiddleware());
+        config.adapter = this.adapter;
+        this.controller = new Botkit(config);
+    }
 
-export const controller: Botkit = new Botkit({
-    adapter: adapter
-});
 
-export async function sendDirectMessage(controller: Botkit, userId: string, msg: string): Promise<{ activity: any, bot: SlackBotWorker }> {
-    let bot: SlackBotWorker = await controller.spawn("PROACTIVE") as SlackBotWorker;
-    await bot.startPrivateConversation(userId); //  function works only on platforms with multiple channels.    // fileszero
-    return { activity: await bot.say(msg), bot: bot };
+    async  sendDirectMessage(userId: string, msg: string): Promise<{ activity: any, bot: SlackBotWorker }> {
+        let bot: SlackBotWorker = await this.controller.spawn("PROACTIVE") as SlackBotWorker;
+        await bot.startPrivateConversation(userId); //  function works only on platforms with multiple channels.    // fileszero
+        return { activity: await bot.say(msg), bot: bot };
+    }
+
+    async  sendMessage(channel: string, msg: string): Promise<{ activity: any, bot: SlackBotWorker }> {
+        let bot: SlackBotWorker = await this.controller.spawn("PROACTIVE") as SlackBotWorker;
+        await bot.startConversationInChannel(channel, ""); //  function works only on platforms with multiple channels.    // fileszero
+        const bot_msg: Partial<BotkitMessage> = {
+            channel: channel,
+            text: msg
+        };
+        return { activity: await bot.say(bot_msg), bot: bot };
+    }
 }
-
-export async function sendMessage(controller: Botkit, channel: string, msg: string): Promise<{ activity: any, bot: SlackBotWorker }> {
-    let bot: SlackBotWorker = await controller.spawn("PROACTIVE") as SlackBotWorker;
-    await bot.startConversationInChannel(channel, ""); //  function works only on platforms with multiple channels.    // fileszero
-    const bot_msg: Partial<BotkitMessage> = {
-        channel: channel,
-        text: msg
-    };
-    return { activity: await bot.say(bot_msg), bot: bot };
-}
-

@@ -6,7 +6,6 @@ import { resolve } from 'path';
 import { rejects } from 'assert';
 import { Botkit } from 'botkit';
 import { SlackBotWorker } from 'botbuilder-adapter-slack';
-import { sendDirectMessage } from './slackBot';
 
 // デベロッパーネットワークトップ > YOLP(地図) > 気象情報API
 // https://developer.yahoo.co.jp/webapi/map/openlocalplatform/v1/weather.html
