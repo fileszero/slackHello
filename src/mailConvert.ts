@@ -48,6 +48,7 @@ function unifiedToSlack(text: string) {
     unified = emoji.softbankToUnified(unified);
     // unified = emoji.googleToUnified(unified);
     //unified = unifiedToSlack(unified);
+    unified = mail_data.from.value[0]["address"] + "\n\n" + unified;
     console.log(unified);
     const bot = new slackBot({ disable_webserver: true });
     const CHANNEL = "GKJE67PGC";    // prvatetest:GKJE67PGC // fileszero:U7W20F25A
