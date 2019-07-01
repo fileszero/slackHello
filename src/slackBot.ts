@@ -71,26 +71,26 @@ export class slackBot {
         return { Id: slackId, type: "unknown", info: {} };
     }
 
-    private async  sendDirectMessage(bot: SlackBotWorker, userId: string, msg: string): Promise<{ activity: any, bot: SlackBotWorker }> {
+    private async  sendDirectMessage(bot: SlackBotWorker, userId: string, msg: string, opt: Partial<BotkitMessage>): Promise<{ activity: any, bot: SlackBotWorker }> {
         await bot.startPrivateConversation(userId); //  function works only on platforms with multiple channels.    // fileszero
-        return { activity: await bot.say(msg), bot: bot };
+        opt.user = userId;
+        opt.text = msg;
+        return { activity: await bot.say(opt), bot: bot };
     }
-    private async  sendChannelMessage(bot: SlackBotWorker, channel: string, msg: string): Promise<{ activity: any, bot: SlackBotWorker }> {
+    private async  sendChannelMessage(bot: SlackBotWorker, channel: string, msg: string, opt: Partial<BotkitMessage>): Promise<{ activity: any, bot: SlackBotWorker }> {
         await bot.startConversationInChannel(channel, ""); //  function works only on platforms with multiple channels.    // fileszero
-        const bot_msg: Partial<BotkitMessage> = {
-            channel: channel,
-            text: msg
-        };
-        return { activity: await bot.say(bot_msg), bot: bot };
+        opt.channel = channel;
+        opt.text = msg;
+        return { activity: await bot.say(opt), bot: bot };
     }
 
-    async sendMessage(channel: string, msg: string): Promise<{ activity: any, bot: SlackBotWorker }> {
+    async sendMessage(channel: string, msg: string, opt: Partial<BotkitMessage> = {}): Promise<{ activity: any, bot: SlackBotWorker }> {
         let bot: SlackBotWorker = await this.controller.spawn("PROACTIVE") as SlackBotWorker;
         const idInfo = await this.getIdInfo(bot, channel);
         if (idInfo.type == "user") {
-            return this.sendDirectMessage(bot, channel, msg)
+            return this.sendDirectMessage(bot, channel, msg, opt)
         } else if (idInfo.type == "channel" || idInfo.type == "group") {
-            return this.sendChannelMessage(bot, channel, msg)
+            return this.sendChannelMessage(bot, channel, msg, opt)
         }
         return { activity: {}, bot: bot };
     }

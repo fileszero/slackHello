@@ -39,43 +39,46 @@ async function startBot() {
         await bot.reply(message, 'なに??');
     });
 }
-// https://www.npmjs.com/package/node-cron#cron-syntax
-//         # ┌────────────── second(optional)
-//         # │ ┌──────────── minute
-//         # │ │ ┌────────── hour
-//         # │ │ │ ┌──────── day of month
-//         # │ │ │ │ ┌────── month
-//         # │ │ │ │ │ ┌──── day of week
-//         # │ │ │ │ │ │
-//         # │ │ │ │ │ │
-//         # * * * * * *
-const CRON_EVERY_5MINUTE = "*/5 * * * *"
-const CRON_EVERY_MORNING = "5 6 * * *"
-const CRON_EVERY_EVENING = "5 18 * * *"
-const CRON_EVERY_HALFDAY = "5 6,18 * * *"
-cron.schedule(CRON_EVERY_HALFDAY, async () => {
-    console.log("sendScheduleNotice CRON_EVERY_HALFDAY");
-    const message = await getScheduleNotice();
-    if (message) {
-        bot.sendMessage(config.slack.dmTarget, message);
-    }
 
-})
+function startCRONJobs() {
+    // https://www.npmjs.com/package/node-cron#cron-syntax
+    //         # ┌────────────── second(optional)
+    //         # │ ┌──────────── minute
+    //         # │ │ ┌────────── hour
+    //         # │ │ │ ┌──────── day of month
+    //         # │ │ │ │ ┌────── month
+    //         # │ │ │ │ │ ┌──── day of week
+    //         # │ │ │ │ │ │
+    //         # │ │ │ │ │ │
+    //         # * * * * * *
+    const CRON_EVERY_5MINUTE = "*/5 * * * *"
+    const CRON_EVERY_MORNING = "5 6 * * *"
+    const CRON_EVERY_EVENING = "5 18 * * *"
+    const CRON_EVERY_HALFDAY = "5 6,18 * * *"
+    cron.schedule(CRON_EVERY_HALFDAY, async () => {
+        console.log("sendScheduleNotice CRON_EVERY_HALFDAY");
+        const message = await getScheduleNotice();
+        if (message) {
+            bot.sendMessage(config.slack.dmTarget, message);
+        }
 
-cron.schedule(CRON_EVERY_5MINUTE, async () => {
-    console.log("sendRainNotice CRON_EVERY_5MINUTE");
-    const message = await sendRainNotice();
-    if (message) {
-        bot.sendMessage(config.slack.dmTarget, message);
-    }
+    })
 
-});
+    cron.schedule(CRON_EVERY_5MINUTE, async () => {
+        console.log("sendRainNotice CRON_EVERY_5MINUTE");
+        const message = await sendRainNotice();
+        if (message) {
+            bot.sendMessage(config.slack.dmTarget, message);
+        }
 
+    });
+}
 (async () => {
+    // startCRONJobs();
     bot.sendMessage(config.slack.dmTarget, "bot started Direct message");
-    // bot.sendMessage("C7W0K6P5G", "bot started public channel message general");
-    // bot.sendMessage("GKJE67PGC", "bot started private channel message");
-    // bot.sendMessage("G7WRV4KS7", "bot started private channel message (not memeber)log4js");
+    bot.sendMessage("C7W0K6P5G", "bot started public channel message general");
+    bot.sendMessage("GKJE67PGC", "bot started private channel message", { icon_emoji: ":woman:", as_user: false });
+    bot.sendMessage("G7WRV4KS7", "bot started private channel message (not memeber)log4js");
     // const message = await sendRainNotice();
     // if (message) {
     //     bot.sendDirectMessage(config.slack.dmTarget, message);
