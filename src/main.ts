@@ -74,11 +74,11 @@ function startCRONJobs() {
     });
 }
 (async () => {
-    // startCRONJobs();
-    bot.sendMessage(config.slack.dmTarget, "bot started Direct message");
-    bot.sendMessage("C7W0K6P5G", "bot started public channel message general");
-    bot.sendMessage("GKJE67PGC", "bot started private channel message", { icon_emoji: ":woman:", as_user: false });
-    bot.sendMessage("G7WRV4KS7", "bot started private channel message (not memeber)log4js");
+    startCRONJobs();
+    bot.sendMessage(config.slack.dmTarget, "bot started Direct message"{ icon_emoji: ":robot_face:", as_user: false });
+    // bot.sendMessage("C7W0K6P5G", "bot started public channel message general");
+    // bot.sendMessage("GKJE67PGC", "bot started private channel message", { icon_emoji: ":woman:", as_user: false });
+    // bot.sendMessage("G7WRV4KS7", "bot started private channel message (not memeber)log4js");
     // const message = await sendRainNotice();
     // if (message) {
     //     bot.sendDirectMessage(config.slack.dmTarget, message);
