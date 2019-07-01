@@ -24,8 +24,16 @@ const slackOption: SlackAdapterOptions = {
     redirectUri: "",
 };
 
+interface slackIdInfo {
+    Id: string,
+    type: "user" | "channel" | "group" | "unknown",
+    info: any
+}
+
+
 export class slackBot {
     private adapter: SlackAdapter;
+    private IdInfo: slackIdInfo[] = [];
     public controller: Botkit;
     constructor(config: BotkitConfiguration) {
         this.adapter = new SlackAdapter(slackOption).use(new SlackMessageTypeMiddleware());
@@ -33,20 +41,57 @@ export class slackBot {
         this.controller = new Botkit(config);
     }
 
+    async getIdInfo(bot: SlackBotWorker, slackId: string): Promise<slackIdInfo> {
+        let info = this.IdInfo.find((id) => id.Id == slackId);
+        if (!info) {
+            const user = await bot.api.users.info({ user: slackId }).catch(() => undefined);
+            if (user) {
+                info = { Id: slackId, type: 'user', info: user };
+            }
+            if (!info) {
+                const channel = await bot.api.channels.info({ channel: slackId }).catch(() => undefined);
+                if (channel) {
+                    info = { Id: slackId, type: 'channel', info: channel };
+                }
+            }
+            if (!info) {
+                const channel = await bot.api.groups.info({ channel: slackId }).catch(() => undefined);
+                if (channel) {
+                    info = { Id: slackId, type: 'group', info: channel };
+                }
+            }
 
-    async  sendDirectMessage(userId: string, msg: string): Promise<{ activity: any, bot: SlackBotWorker }> {
-        let bot: SlackBotWorker = await this.controller.spawn("PROACTIVE") as SlackBotWorker;
+            if (info) {
+                this.IdInfo.push(info)
+            }
+        }
+        if (info) {
+            return info;
+        }
+        return { Id: slackId, type: "unknown", info: {} };
+    }
+
+    private async  sendDirectMessage(bot: SlackBotWorker, userId: string, msg: string): Promise<{ activity: any, bot: SlackBotWorker }> {
         await bot.startPrivateConversation(userId); //  function works only on platforms with multiple channels.    // fileszero
         return { activity: await bot.say(msg), bot: bot };
     }
-
-    async  sendMessage(channel: string, msg: string): Promise<{ activity: any, bot: SlackBotWorker }> {
-        let bot: SlackBotWorker = await this.controller.spawn("PROACTIVE") as SlackBotWorker;
+    private async  sendChannelMessage(bot: SlackBotWorker, channel: string, msg: string): Promise<{ activity: any, bot: SlackBotWorker }> {
         await bot.startConversationInChannel(channel, ""); //  function works only on platforms with multiple channels.    // fileszero
         const bot_msg: Partial<BotkitMessage> = {
             channel: channel,
             text: msg
         };
         return { activity: await bot.say(bot_msg), bot: bot };
+    }
+
+    async sendMessage(channel: string, msg: string): Promise<{ activity: any, bot: SlackBotWorker }> {
+        let bot: SlackBotWorker = await this.controller.spawn("PROACTIVE") as SlackBotWorker;
+        const idInfo = await this.getIdInfo(bot, channel);
+        if (idInfo.type == "user") {
+            return this.sendDirectMessage(bot, channel, msg)
+        } else if (idInfo.type == "channel" || idInfo.type == "group") {
+            return this.sendChannelMessage(bot, channel, msg)
+        }
+        return { activity: {}, bot: bot };
     }
 }

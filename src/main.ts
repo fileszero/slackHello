@@ -57,7 +57,7 @@ cron.schedule(CRON_EVERY_HALFDAY, async () => {
     console.log("sendScheduleNotice CRON_EVERY_HALFDAY");
     const message = await getScheduleNotice();
     if (message) {
-        bot.sendDirectMessage(config.slack.dmTarget, message);
+        bot.sendMessage(config.slack.dmTarget, message);
     }
 
 })
@@ -66,13 +66,16 @@ cron.schedule(CRON_EVERY_5MINUTE, async () => {
     console.log("sendRainNotice CRON_EVERY_5MINUTE");
     const message = await sendRainNotice();
     if (message) {
-        bot.sendDirectMessage(config.slack.dmTarget, message);
+        bot.sendMessage(config.slack.dmTarget, message);
     }
 
 });
 
 (async () => {
-    bot.sendDirectMessage(config.slack.dmTarget, "bot started");
+    bot.sendMessage(config.slack.dmTarget, "bot started Direct message");
+    bot.sendMessage("C7W0K6P5G", "bot started public channel message general");
+    bot.sendMessage("GKJE67PGC", "bot started private channel message");
+    bot.sendMessage("G7WRV4KS7", "bot started private channel message (not memeber)log4js");
     // const message = await sendRainNotice();
     // if (message) {
     //     bot.sendDirectMessage(config.slack.dmTarget, message);
