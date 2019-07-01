@@ -73,9 +73,9 @@ cron.schedule(CRON_EVERY_5MINUTE, async () => {
 
 (async () => {
     bot.sendMessage(config.slack.dmTarget, "bot started Direct message");
-    bot.sendMessage("C7W0K6P5G", "bot started public channel message general");
-    bot.sendMessage("GKJE67PGC", "bot started private channel message");
-    bot.sendMessage("G7WRV4KS7", "bot started private channel message (not memeber)log4js");
+    // bot.sendMessage("C7W0K6P5G", "bot started public channel message general");
+    // bot.sendMessage("GKJE67PGC", "bot started private channel message");
+    // bot.sendMessage("G7WRV4KS7", "bot started private channel message (not memeber)log4js");
     // const message = await sendRainNotice();
     // if (message) {
     //     bot.sendDirectMessage(config.slack.dmTarget, message);
