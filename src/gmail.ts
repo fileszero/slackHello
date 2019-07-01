@@ -1,13 +1,14 @@
 import dotenv from 'dotenv';
 import * as imaps from 'imap-simple';
+import config from "./config";
 
 dotenv.config();
 // https://github.com/chadxz/imap-simple
 
-var config: imaps.ImapSimpleOptions = {
+var imap_config: imaps.ImapSimpleOptions = {
     imap: {
-        user: process.env.GMAIL_ADDRESS || '',
-        password: process.env.GMAIL_IMAP_PASSWARD || '',
+        user: config.gmail.address,
+        password: config.gmail.imapPassword,
         host: 'imap.gmail.com',
         port: 993,
         tls: true,
@@ -19,7 +20,7 @@ var config: imaps.ImapSimpleOptions = {
 };
 
 (async () => {
-    var client = await imaps.connect(config);
+    var client = await imaps.connect(imap_config);
     await client.openBox('INBOX');
     client.on('mail', (args) => {
         console.log("new mail!" + args);

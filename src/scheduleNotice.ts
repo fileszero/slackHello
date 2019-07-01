@@ -1,9 +1,6 @@
-import * as slackBot from './slackBot'
-import { Botkit, BotkitMessage } from 'botkit';
-import { SlackBotWorker } from 'botbuilder-adapter-slack';
 import { GoogleCalendar, CalendarEvent } from './gcal';
 import * as datefns from 'date-fns';
-import { WebAPICallOptions } from '@slack/client';
+import config from "./config";
 
 
 function compareCalendarEvent(a: CalendarEvent, b: CalendarEvent) {
@@ -23,7 +20,7 @@ function eventArrayToString(events: CalendarEvent[]) {
 async function GetCalenderMessage(offsetToday: 0 | 1) {
     const name_of_days = ["今日", "明日"];
     // Authorize a client with credentials, then call the Google Calendar API.
-    const gcal = new GoogleCalendar(process.env.GOOGLE_CLIENT_SECRET_PATH || "", process.env.GOOGLE_TOKEN_PATH || "")
+    const gcal = new GoogleCalendar(config.google.clientSecretPath, config.google.tokenPath)
 
     const events = eventArrayToString(await gcal.listEvents(offsetToday, 1));
     // const tomorrow_events = (await gcal.listEvents(1, 1)).sort(compEvent).map(eventToString).join("\n");

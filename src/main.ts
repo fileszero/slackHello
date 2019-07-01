@@ -3,6 +3,7 @@ import * as cron from 'node-cron';
 import { slackBot } from './slackBot'
 import { getScheduleNotice } from './scheduleNotice';
 import { sendRainNotice } from './yahooWeather';
+import config from "./config";
 
 const bot = new slackBot({});
 
@@ -56,7 +57,7 @@ cron.schedule(CRON_EVERY_HALFDAY, async () => {
     console.log("sendScheduleNotice CRON_EVERY_HALFDAY");
     const message = await getScheduleNotice();
     if (message) {
-        bot.sendDirectMessage(process.env.DM_TARGET || '', message);
+        bot.sendDirectMessage(config.slack.dmTarget, message);
     }
 
 })
@@ -65,20 +66,23 @@ cron.schedule(CRON_EVERY_5MINUTE, async () => {
     console.log("sendRainNotice CRON_EVERY_5MINUTE");
     const message = await sendRainNotice();
     if (message) {
-        bot.sendDirectMessage(process.env.DM_TARGET || '', message);
+        bot.sendDirectMessage(config.slack.dmTarget, message);
     }
 
 });
 
 (async () => {
-    bot.sendDirectMessage(process.env.DM_TARGET || '', "bot started");
-
+    bot.sendDirectMessage(config.slack.dmTarget, "bot started");
+    // const message = await sendRainNotice();
+    // if (message) {
+    //     bot.sendDirectMessage(config.slack.dmTarget, message);
+    // }
     // var msg = [":sunny:", ":rain_0_1:", ":rain_1_3:", ":rain_4_10:", ":rain_11_20:", ":rain_21:"].join(" ");
-    // slackBot.sendDirectMessage(controller, process.env.DM_TARGET || '', "テスト\n" + msg);
+    // slackBot.sendDirectMessage(controller, config.slack.dmTarget || '', "テスト\n" + msg);
 
     // const message = await sendRainNotice();
     // if (message) {
-    //     slackBot.sendDirectMessage(controller, process.env.DM_TARGET || '', message);
+    //     slackBot.sendDirectMessage(controller, config.slack.dmTarget || '', message);
     // }
 
 })();

@@ -82,3 +82,4 @@ typings/
 /dest/*
 /data/*
 !/data/readme.md
+src/config.ts

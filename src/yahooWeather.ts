@@ -2,10 +2,8 @@ import dotenv from 'dotenv';
 import * as https from 'https';
 import * as url from 'url';
 import * as datefns from 'date-fns';
-import { resolve } from 'path';
-import { rejects } from 'assert';
-import { Botkit } from 'botkit';
-import { SlackBotWorker } from 'botbuilder-adapter-slack';
+import config from "./config";
+
 
 // デベロッパーネットワークトップ > YOLP(地図) > 気象情報API
 // https://developer.yahoo.co.jp/webapi/map/openlocalplatform/v1/weather.html
@@ -55,7 +53,7 @@ const API_URL = 'https://map.yahooapis.jp/weather/V1/place';
 
 async function getWeather(location: WeatherLocation): Promise<WeatherResult> {
     const call_url = new url.URL(API_URL);
-    call_url.searchParams.append('appid', process.env.YAHOO_APP_ID || '');  // Yahoo アプリケーションID
+    call_url.searchParams.append('appid', config.yahoo.appId);  // Yahoo アプリケーションID
     call_url.searchParams.append('coordinates', location.coordinates.longitude + ',' + location.coordinates.latitude);  // 経度,緯度 coordinates=139.732293,35.663613
     call_url.searchParams.append('output', 'json');  // 出力形式 xml (default) or json
     call_url.searchParams.append('date', datefns.format(new Date(), 'YYYYMMDDHHmm'));   //日時を指定します（YYYYMMDDHHMI形式）。現在から2時間前までの日時を指定できます。

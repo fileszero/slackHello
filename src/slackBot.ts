@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import { SlackAdapter, SlackMessageTypeMiddleware, SlackBotWorker, SlackAdapterOptions } from 'botbuilder-adapter-slack';
 import { Botkit, BotkitMessage, BotkitConfiguration } from 'botkit';
+import config from "./config";
 
 // run > ngrok http 3000 --log stdout
 // access https://api.slack.com/apps
@@ -17,17 +18,10 @@ import { Botkit, BotkitMessage, BotkitConfiguration } from 'botkit';
 
 dotenv.config();
 
-if (!process.env.SLACK_CLIENT_ID) {
-    console.log('Error: Specify SLACK_BOTTOKEN in environment');
-    process.exit(1);
-}
-console.log(process.env.SLACK_CLIENT_ID);
-
 const slackOption: SlackAdapterOptions = {
-    // clientId: process.env.SLACK_CLIENT_ID,
-    clientSigningSecret: process.env.SLACK_SIGNING_SECRET,
-    botToken: process.env.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN,    // https://botkit.ai/docs/v4/platforms/slack.html#multi-team-support
-    redirectUri: process.env.SLACK_REDIRECTURI || "",
+    clientSigningSecret: config.slack.signingSecret,
+    botToken: config.slack.botUserOauthAccessToken,    // https://botkit.ai/docs/v4/platforms/slack.html#multi-team-support
+    redirectUri: "",
 };
 
 export class slackBot {
