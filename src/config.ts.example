@@ -26,3 +26,5 @@ export default {
         appId: "yahooooooclientid",
     }
 }
+
+// ## cat ./src/config.ts | base64 -w 0 > ./data/base64_config_ts

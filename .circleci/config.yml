@@ -44,6 +44,7 @@ jobs:
             # echo ${ENV}
             echo ${ENV} | base64 --decode > .env
             echo ${GOOGLE_API_TOKEN}| base64 --decode > ./data/token.json
+            echo ${CONFIG_TS}| base64 --decode > ./src/config.ts
             # pwd
             # cat .env
             ls -la ./data
