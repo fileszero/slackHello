@@ -48,7 +48,7 @@ export class GoogleOAuthApi {
      * given callback function.
      * @param {Object} credentials The authorization client credentials.
      */
-    protected async authorize(): Promise<OAuth2Client> {
+    public async authorize(): Promise<OAuth2Client> {
         if (this._oAuth2Client) {   // already authorized
             return this._oAuth2Client;
         }

@@ -5,6 +5,7 @@ import * as datefns from 'date-fns';
 import { google, calendar_v3 } from 'googleapis';
 import { GaxiosResponse } from 'gaxios';
 import { GoogleOAuthApi } from './googleOAuthApi';
+import config from "./config";
 
 export interface CalendarEvent extends calendar_v3.Schema$Event {
     startAt: Date;
@@ -12,12 +13,13 @@ export interface CalendarEvent extends calendar_v3.Schema$Event {
     CalendarId?: string;
     CalendarSummary?: string;
 }
-export class GoogleCalendar extends GoogleOAuthApi {
+export class GoogleCalendar {
     // If modifying these scopes, delete token.json.
     static SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
 
+    _oauth: GoogleOAuthApi;
     constructor(ClientSecretPath: string, TokenPath: string) {
-        super(ClientSecretPath, TokenPath, GoogleCalendar.SCOPES)
+        this._oauth = new GoogleOAuthApi(ClientSecretPath, TokenPath, GoogleCalendar.SCOPES);
     }
 
 
@@ -26,7 +28,7 @@ export class GoogleCalendar extends GoogleOAuthApi {
         if (this._CalendarAPI) {
             return this._CalendarAPI;
         }
-        const auth = await this.authorize();
+        const auth = await this._oauth.authorize();
         const calendar = google.calendar({ version: 'v3', auth });
         return calendar;
     }
@@ -113,7 +115,7 @@ export class GoogleCalendar extends GoogleOAuthApi {
 // (async () => {
 
 
-//     const gcal = new GoogleCalendar(process.env.GOOGLE_CLIENT_SECRET_PATH || "", process.env.GOOGLE_TOKEN_PATH || "")
+//     const gcal = new GoogleCalendar(config.google.clientSecretPath, config.google.tokenPath)
 //     // Authorize a client with credentials, then call the Google Calendar API.
 //     const compEvent = (a: CalendarEvent, b: CalendarEvent) => a.startAt.getTime() - b.startAt.getTime();
 //     const eventToString = (event: CalendarEvent) => {
