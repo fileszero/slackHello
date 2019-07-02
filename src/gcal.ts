@@ -15,11 +15,11 @@ export interface CalendarEvent extends calendar_v3.Schema$Event {
 }
 export class GoogleCalendar {
     // If modifying these scopes, delete token.json.
-    static SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
+    // static SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
 
     _oauth: GoogleOAuthApi;
-    constructor(ClientSecretPath: string, TokenPath: string) {
-        this._oauth = new GoogleOAuthApi(ClientSecretPath, TokenPath, GoogleCalendar.SCOPES);
+    constructor(ClientSecretPath: string = '', TokenPath: string = '') {
+        this._oauth = new GoogleOAuthApi();
     }
 
 
@@ -110,7 +110,7 @@ export class GoogleCalendar {
         return events;
     }
 }
-// // entry point
+// // test entry point
 // dotenv.config();
 // (async () => {
 
@@ -127,14 +127,15 @@ export class GoogleCalendar {
 
 //     const todays_events = (await gcal.listEvents(0, 1)).sort(compEvent).map(eventToString).join("\n");
 //     const tomorrow_events = (await gcal.listEvents(1, 1)).sort(compEvent).map(eventToString).join("\n");
+//     const week_events = (await gcal.listEvents(0, 7)).sort(compEvent).map(eventToString).join("\n");
 
 //     let message = "";
-//     if (todays_events) {
-//         message += "今日の予定は\n" + todays_events + "\nです。"
+//     if (week_events) {
+//         message += "今週の予定は\n" + week_events + "\nです。"
 //     } else {
-//         message += "今日の予定は*ありません*。"
+//         message += "今週の予定は*ありません*。"
 //     }
 
-//     console.log(JSON.stringify(message));
+//     console.log(message);
 
 // })();

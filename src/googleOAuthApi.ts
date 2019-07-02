@@ -3,6 +3,7 @@ import * as readline from 'readline';
 
 import { google } from 'googleapis';
 import { OAuth2Client, Credentials } from 'google-auth-library';
+import config from './config';
 
 // downloaded ClientSecret.json file data
 interface ClientSecrets {
@@ -20,7 +21,16 @@ interface ClientSecrets {
 export class GoogleOAuthApi {
     // If modifying these scopes, delete token.json.
     private _oAuth2Client: OAuth2Client | null;
-    constructor(private ClientSecretPath: string, private TokenPath: string, private Scopes: string[]) {
+    constructor(private ClientSecretPath: string = '', private TokenPath: string = '', private Scopes: string[] = []) {
+        if (this.ClientSecretPath == '') {
+            this.ClientSecretPath = config.google.clientSecretPath;
+        }
+        if (this.TokenPath == '') {
+            this.TokenPath = config.google.tokenPath;
+        }
+        if (this.Scopes.length == 0) {
+            this.Scopes = config.google.scopes;
+        }
         this._oAuth2Client = null;
     }
     ///
