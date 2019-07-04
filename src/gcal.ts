@@ -9,6 +9,7 @@ import config from "./config";
 
 export interface CalendarEvent extends calendar_v3.Schema$Event {
     startAt: Date;
+    endAt: Date;
     isAllDay?: boolean;
     CalendarId?: string;
     CalendarSummary?: string;
@@ -74,6 +75,7 @@ export class GoogleCalendar {
 
         const timeMin = datefns.addDays(datefns.startOfToday(), offsetToday);
         const timeMax = datefns.addDays(timeMin, days);
+        // trim bound
         const listParam: calendar_v3.Params$Resource$Events$List = {
             calendarId: 'primary',
             timeMin: timeMin.toISOString(),
@@ -99,18 +101,28 @@ export class GoogleCalendar {
                         if (src.start.date) {
                             ev.startAt = new Date(src.start.date + "T00:00:00+09:00");
                             ev.isAllDay = true;
+                            if (src.end) {
+                                ev.endAt = new Date(src.end.date + "T00:00:00+09:00");
+                            } else {
+                                ev.endAt = datefns.addDays(ev.startAt, 1);
+                            }
+                            if (ev.endAt > timeMin) {
+                                ev.isAllDay = true;
+                            } else {
+                                return null;
+                            }
                         }
                     }
                     ev.CalendarId = cal.id;
                     ev.CalendarSummary = cal.summary;
                     return ev;
-                }));
+                }).filter((ev) => ev != null));
             }
         }
         return events;
     }
 }
-// // test entry point
+// test entry point
 // dotenv.config();
 // (async () => {
 
@@ -125,15 +137,15 @@ export class GoogleCalendar {
 //     }
 
 
-//     const todays_events = (await gcal.listEvents(0, 1)).sort(compEvent).map(eventToString).join("\n");
-//     const tomorrow_events = (await gcal.listEvents(1, 1)).sort(compEvent).map(eventToString).join("\n");
-//     const week_events = (await gcal.listEvents(0, 7)).sort(compEvent).map(eventToString).join("\n");
+//     const events = (await gcal.listEvents(-2, 1)).sort(compEvent).map(eventToString).join("\n");
+//     // const events = (await gcal.listEvents(1, 1)).sort(compEvent).map(eventToString).join("\n");
+//     // const events = (await gcal.listEvents(0, 7)).sort(compEvent).map(eventToString).join("\n");
 
 //     let message = "";
-//     if (week_events) {
-//         message += "今週の予定は\n" + week_events + "\nです。"
+//     if (events) {
+//         message += "予定は\n" + events + "\nです。"
 //     } else {
-//         message += "今週の予定は*ありません*。"
+//         message += "予定は*ありません*。"
 //     }
 
 //     console.log(message);
