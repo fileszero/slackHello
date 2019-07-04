@@ -101,34 +101,36 @@ export async function sendRainNotice(): Promise<string> {
     const forecast = wz.Feature[0].Property.WeatherList.Weather.filter((w) => w.Type == "forecast");
     const current = forecast[0];    //observations[observations.length - 1];
     const rains = forecast.filter((f) => f.Rainfall > 0.0);
-    let next_status: WeatherStatus;
+    const totalRainfall = forecast.map((f) => f.Rainfall).reduce((val, cur) => val + cur);
+    let next_status: WeatherStatus | undefined = undefined;
 
     if (rains.length >= forecast.length / 2 || forecast[0].Rainfall > 0) {
         // 半分以上が雨か、直近が雨なら、もうすぐ雨
         next_status = "rain";
-    } else {
+    } else if (totalRainfall < 1) { //1ミリ以下は晴れ
         next_status = "sunny";
     }
-
-    if (currentStatus == "willSunny" && next_status == "sunny") {
-        // 晴れそう→晴れ
-        currentStatus = "sunny";
-    } else if (currentStatus == "willRain" && next_status == "rain") {
-        // 降りそう→雨
-        currentStatus = "rain";
-    } else if ((currentStatus == "sunny" || currentStatus == "willSunny") && next_status == "rain") {
-        // 晴れ→雨
-        message = location.name + "で、もうすぐ雨が降りそうです";
-        currentStatus = "willRain";
-    } else if ((currentStatus == "rain" || currentStatus == "willRain") && next_status == "sunny") {
-        // 雨→晴れ
-        message = location.name + "で、もうすぐ晴れそうです";
-        currentStatus = "willSunny";
+    if (next_status) {
+        if (currentStatus == "willSunny" && next_status == "sunny") {
+            // 晴れそう→晴れ
+            currentStatus = "sunny";
+        } else if (currentStatus == "willRain" && next_status == "rain") {
+            // 降りそう→雨
+            currentStatus = "rain";
+        } else if ((currentStatus == "sunny" || currentStatus == "willSunny") && next_status == "rain") {
+            // 晴れ→雨
+            message = location.name + "で、もうすぐ雨が降りそうです";
+            currentStatus = "willRain";
+        } else if ((currentStatus == "rain" || currentStatus == "willRain") && next_status == "sunny") {
+            // 雨→晴れ
+            message = location.name + "で、もうすぐ晴れそうです";
+            currentStatus = "willSunny";
+        }
     }
     if (message != "") {
         return message += "\n" + levelString(forecast);
     } else {
-        console.log("そのまま")
+        console.log("そのまま" + levelString(forecast) + totalRainfall);
     }
     return "";
 }
