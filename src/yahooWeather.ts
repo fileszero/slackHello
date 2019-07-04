@@ -76,9 +76,20 @@ async function getWeather(location: WeatherLocation): Promise<WeatherResult> {
     });
 }
 
-
-let notice: "willRain" | "willSunny" | "stay" = 'stay';
+type WeatherStatus = "willRain" | "willSunny" | "sunny" | "rain";
+let currentStatus: WeatherStatus = 'sunny';
 const rain_levels = [":sunny:", ":rain_0_1:", ":rain_1_3:", ":rain_4_10:", ":rain_11_20:", ":rain_21:"];
+function levelString(forecast: { Rainfall: number }[]) {
+    const levels = forecast.map((f) => {
+        if (f.Rainfall == 0) return rain_levels[0];
+        if (f.Rainfall < 1) return rain_levels[1];
+        if (f.Rainfall < 3) return rain_levels[2];
+        if (f.Rainfall < 10) return rain_levels[3];
+        if (f.Rainfall < 20) return rain_levels[4];
+        return rain_levels[5];
+    });
+    return levels.join(" ");
+}
 export async function sendRainNotice(): Promise<string> {
     const location: WeatherLocation = {
         name: "泉区",
@@ -89,35 +100,43 @@ export async function sendRainNotice(): Promise<string> {
     const observations = wz.Feature[0].Property.WeatherList.Weather.filter((w) => w.Type == "observation");
     const forecast = wz.Feature[0].Property.WeatherList.Weather.filter((w) => w.Type == "forecast");
     const current = forecast[0];    //observations[observations.length - 1];
-    // notice = "willRain"; //debug
-    // forecast[3].Rainfall = 0.1; //debug
-    if (current.Rainfall == 0.0) {    // 今晴れてる
-        const rain = forecast.find((f) => f.Rainfall > 0.0);
-        if (rain && notice != "willRain") {
-            const levels = forecast.map((f) => {
-                if (f.Rainfall == 0) return rain_levels[0];
-                if (f.Rainfall < 1) return rain_levels[1];
-                if (f.Rainfall < 3) return rain_levels[2];
-                if (f.Rainfall < 10) return rain_levels[3];
-                if (f.Rainfall < 20) return rain_levels[4];
-                return rain_levels[5];
-            })
-            message = location.name + "で、もうすぐ雨が降りそうです\n" + levels.join(" ");
-            notice = "willRain"
-        } else if (!rain && notice == "willRain") {
-            message = "やっぱり降らなさそうです";
-            notice = "stay"
-        }
-    } else {    //今降ってる
-        notice = "stay"
+    const rains = forecast.filter((f) => f.Rainfall > 0.0);
+    let next_status: WeatherStatus;
+
+    if (rains.length >= forecast.length / 2 || forecast[0].Rainfall > 0) {
+        // 半分以上が雨か、直近が雨なら、もうすぐ雨
+        next_status = "rain";
+    } else {
+        next_status = "sunny";
+    }
+
+    if (currentStatus == "willSunny" && next_status == "sunny") {
+        // 晴れそう→晴れ
+        currentStatus = "sunny";
+    } else if (currentStatus == "willRain" && next_status == "rain") {
+        // 降りそう→雨
+        currentStatus = "rain";
+    } else if ((currentStatus == "sunny" || currentStatus == "willSunny") && next_status == "rain") {
+        // 晴れ→雨
+        message = location.name + "で、もうすぐ雨が降りそうです";
+        currentStatus = "willRain";
+    } else if ((currentStatus == "rain" || currentStatus == "willRain") && next_status == "sunny") {
+        // 雨→晴れ
+        message = location.name + "で、もうすぐ晴れそうです";
+        currentStatus = "willSunny";
     }
     if (message != "") {
-        return message;
+        return message += "\n" + levelString(forecast);
     } else {
-        console.log("no rain")
+        console.log("そのまま")
     }
     return "";
 }
 
 // debug
-// (async () => { const message = await sendRainNotice(); })();
+// (async () => {
+//     let message = await sendRainNotice();
+//     console.log(message);
+//     message = await sendRainNotice();
+//     console.log(message);
+// })();
