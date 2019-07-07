@@ -47,10 +47,29 @@ class Gmail {
         return "0x" + code_str;
     }
 
+    public getMailBody(payload?: gmail_v1.Schema$MessagePart): gmail_v1.Schema$MessagePartBody | undefined {
+        let body: gmail_v1.Schema$MessagePartBody | undefined;
+        if (payload) {
+            if (payload.body && payload.body.data) {
+                body = payload.body;
+            } else if (payload.parts && payload.parts.length > 0) {
+                for (const part of payload.parts) {
+                    if (part.mimeType == "multipart/alternative") {
+                        return this.getMailBody(part);
+                    }
+                    if (part.mimeType == "text/plain") {
+                        return part.body;
+                    }
+                }
+            }
+        }
+        return body;
+    }
+
     public async getMailByMessageId(msgId: string) {
         // rfc822msgid: <IMTM1XS122bdd90704IR@docomo.ne.jp>
         const api = await this.getAPI();
-        const list = await api.users.messages.list({ userId: "me", q: "rfc822msgid:" + msgId });
+        const list = await api.users.messages.list({ userId: "me", q: "rfc822msgid:" + msgId, maxResults: 1 });
         let id = '';
         if (list.data && list.data.messages) {
             if (list.data.messages.length > 0) {
@@ -59,12 +78,14 @@ class Gmail {
         }
         if (id != '') {
             const message = await api.users.messages.get({ userId: "me", id: id });
-            console.log(message.data.snippet);
-            console.log(emoji.googleToUnified(message.data.snippet || ""));
-            if (message.data.payload && message.data.payload.body) {
-                const body = Buffer.from(message.data.payload.body.data || '', 'base64').toString();
-                console.log(emoji.googleToUnified(body));
+            // console.log(message.data.snippet);
+            let message_body = "";
+            const body = this.getMailBody(message.data.payload);
+            if (body) {
+                message_body = Buffer.from(body.data || '', 'base64').toString();
             }
+
+            console.log(emoji.googleToUnified(message_body));
 
         }
 
@@ -74,6 +95,16 @@ class Gmail {
 // // test
 // (async () => {
 //     var client = new Gmail();
-//     client.getMailByMessageId("<IMTM1XS122bdd90704IR@docomo.ne.jp>");
-//     //client.getMailByMessageId("<1365751891.4095.1562026538707.JavaMail.appbatch@10.0.10.3>")
+//     await client.getMailByMessageId("<IMTM1XS122bdd90704IR@docomo.ne.jp>");
+//     console.log("<><><><><><><><>");
+//     await client.getMailByMessageId("<CALa0no8Oesqyz3rL0-hMYtYbXO66dx99GHscMF-Syy2EiqoZSg@mail.gmail.com>");  // inline img
+//     console.log("<><><><><><><><>");
+//     await client.getMailByMessageId("<d_P7X5j7jMYBs-Irsuj40Q.0@notifications.google.com>");
+//     console.log("<><><><><><><><>");
+//     await client.getMailByMessageId("<1365751891.4095.1562026538707.JavaMail.appbatch@10.0.10.3>")
+//     console.log("<><><><><><><><>");
+//     //await client.getMailByMessageId("<20190701202409.0788C1801A5@www11478ui.sakura.ne.jp>");
+//     //console.log("<><><><><><><><>");
+//     await client.getMailByMessageId("<CALa0no_k43xxqTSAT4=8+QDQMq7TUL17xV-Ah7u1=H5WTmFnNQ@mail.gmail.com>");
+//     console.log("<><><><><><><><>");
 // })();
