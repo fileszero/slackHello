@@ -3,7 +3,7 @@ import { ParsedMail } from 'mailparser';
 import * as emoji from 'emoji';
 
 export class defaultConverter implements baseConverter {
-	convert(mail_data: ParsedMail): string {
+	async convert(mail_data: ParsedMail): Promise<string> {
 		const from_address: string = mail_data.from.value[0]['address'];
 		// console.log(mail_data.text);
 		// if (mail_data.from.value[0]["address"]) {    }
