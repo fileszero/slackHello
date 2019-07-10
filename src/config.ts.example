@@ -11,13 +11,26 @@ export default {
         botUserOauthAccessToken: "xoxb-010010101011-010010101011-uayiusdyiouyadiouyiouyui",
         // Direct message target user id
         dmTarget: "A0A00A00A",
+  		emailChannel: [
+			{
+				email: 'thefrom@example.com',
+				channel: 'SLAKCHID',
+				opt: { icon_emoji: ':woman:', as_user: false , username:'name for display'}
+				converter: mailConverters.static_default
+			}
+			// opt = sendmesssage option https://api.slack.com/methods/chat.postMessage
+		]
     },
     google: {
         clientSecretPath: "./data/client_secret_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com.json",
         // The file token.json stores the user's access and refresh tokens,
         // and is created automatically when the authorization flow completes for the first time.
         tokenPath: "./data/token.json",
-        scopes: ['https://www.googleapis.com/auth/calendar.readonly','https://www.googleapis.com/auth/gmail.readonly']
+		scopes: [
+			'https://www.googleapis.com/auth/calendar.readonly',
+			'https://www.googleapis.com/auth/gmail.readonly',
+			'https://www.googleapis.com/auth/contacts.readonly'
+		]
     },
     gmail: {
         address: "hogehoge@gmail.com",
