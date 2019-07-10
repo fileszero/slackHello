@@ -29,14 +29,13 @@ function unifiedToSlack(text: string) {
 	});
 }
 (async () => {
-	//const text = await readStdin();
-	// const text = await readStdin2()
-	//const text = fs.readFileSync(0);    //type .\data\original_msg.eml | node ./dest/mailConvert.js
-	// .\data\iso-2022-jp.eml
+	const text = await readStdin();
+
+	// const text = fs.readFileSync(0);    //type .\data\original_msg.eml | node ./dest/mailConvert.js
 	// const text = fs.readFileSync('./data/original_msg.eml', {});
 	// const text = fs.readFileSync('./data/iso-2022-jp.eml', {});
-	//const text = fs.readFileSync('./data/inline_img.eml', {});
-	const text = fs.readFileSync('./data/lalacall.eml', {});
+	// const text = fs.readFileSync('./data/inline_img.eml', {});
+	// const text = fs.readFileSync('./data/lalacall.eml', {});
 
 	// console.log(text);
 	const mail_opt: mailparser.SimpleParserOptions = {
