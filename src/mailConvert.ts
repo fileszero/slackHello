@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import { slackBot } from './slackBot';
 import { SlackBotWorker } from 'botbuilder-adapter-slack';
 import config from './config';
+import * as mailConverters from './mailConverters';
 
 const Iconv = require('iconv').Iconv;
 
@@ -28,56 +29,54 @@ function unifiedToSlack(text: string) {
 	});
 }
 (async () => {
-	const text = await readStdin();
+	//const text = await readStdin();
 	// const text = await readStdin2()
 	//const text = fs.readFileSync(0);    //type .\data\original_msg.eml | node ./dest/mailConvert.js
 	// .\data\iso-2022-jp.eml
 	// const text = fs.readFileSync('./data/original_msg.eml', {});
 	// const text = fs.readFileSync('./data/iso-2022-jp.eml', {});
 	//const text = fs.readFileSync('./data/inline_img.eml', {});
+	const text = fs.readFileSync('./data/lalacall.eml', {});
 
-	console.log(text);
+	// console.log(text);
 	const mail_opt: mailparser.SimpleParserOptions = {
 		//encoding: "sjis"
 	};
 	const mail_data = await mailparser.simpleParser(text, { Iconv: Iconv });
 	const from_address: string = mail_data.from.value[0]['address'];
 	const emailChannel = config.slack.emailChannel.find((ec) => ec.email == from_address);
+	console.log('from:' + from_address);
 	if (!emailChannel) {
 		return '';
 	}
-	console.log(mail_data.text);
+	// convert body to slack
+	const mailConverter: mailConverters.baseConverter = emailChannel.converter
+		? emailChannel.converter
+		: mailConverters.static_default;
+	// console.log(mail_data.text);
 	// if (mail_data.from.value[0]["address"]) {    }
-	let unified = emoji.docomoToUnified(mail_data.text);
-	unified = emoji.kddiToUnified(unified);
-	unified = emoji.softbankToUnified(unified);
-	// unified = emoji.googleToUnified(unified);
-	//unified = unifiedToSlack(unified);
-	unified = from_address + '\n\n' + unified;
-	if (mail_data.subject) {
-		unified = '*' + mail_data.subject.trim() + '* / ' + unified;
-	}
+	let unified = mailConverter.convert(mail_data);
 	console.log(unified);
+
 	const bot = new slackBot({ disable_webserver: true });
 	const thread = await bot.sendMessage(emailChannel.channel, unified, emailChannel.opt);
-	if (mail_data.attachments) {
-		//https://qiita.com/stkdev/items/992921572eefc7de4ad8
-		const attachments = await Promise.all(
-			mail_data.attachments.map(async (f) => {
-				// var image = 'data:' + f.contentType + ";base64," + f.content.toString('base64');
-				// f.content.toString(image);
-				const upload = await thread.bot.api.files.upload({
-					// https://api.slack.com/methods/files.upload
-					filename: f.filename,
-					title: f.filename,
-					initial_comment: 'アタッチ',
-					file: f.content,
-					channels: emailChannel.channel, // general: 'C7W0K6P5G'
-					thread_ts: thread.activity.id
-					// filetype: 'png'  //https://api.slack.com/types/file#file_types
-				});
-			})
-		);
-	}
-	//console.log(unified);
+	// if (mail_data.attachments) {
+	// 	//https://qiita.com/stkdev/items/992921572eefc7de4ad8
+	// 	const attachments = await Promise.all(
+	// 		mail_data.attachments.map(async (f) => {
+	// 			// var image = 'data:' + f.contentType + ";base64," + f.content.toString('base64');
+	// 			// f.content.toString(image);
+	// 			const upload = await thread.bot.api.files.upload({
+	// 				// https://api.slack.com/methods/files.upload
+	// 				filename: f.filename,
+	// 				title: f.filename,
+	// 				initial_comment: 'アタッチ',
+	// 				file: f.content,
+	// 				channels: emailChannel.channel, // general: 'C7W0K6P5G'
+	// 				thread_ts: thread.activity.id
+	// 				// filetype: 'png'  //https://api.slack.com/types/file#file_types
+	// 			});
+	// 		})
+	// 	);
+	// }
 })();
