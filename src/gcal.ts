@@ -142,15 +142,51 @@ export class GoogleCalendar {
 		}
 		return events;
 	}
+	public async upsertEvent(event: Partial<CalendarEvent>) {
+		const api = await this.getCalendarAPI();
+
+		if (event.id) {
+			const updated = await api.events.update({
+				calendarId: event.CalendarId,
+				eventId: event.id,
+				requestBody: event
+			});
+		} else {
+			const created = await api.events.insert({
+				calendarId: event.CalendarId,
+				requestBody: event
+			});
+		}
+	}
 }
 // // test entry point
 // (async () => {
 // 	const gcal = new GoogleCalendar();
-// 	let events = await gcal.listEvents(-1, 1);
-// 	console.log(events);
+// 	const start = datefns.startOfToday();
+// 	const end = datefns.addHours(start, 1);
+// 	let event: Partial<CalendarEvent> = {
+// 		CalendarId: '',
+// 		summary: '宅配が来ますよ',
+// 		description: '[4126]\n注文っぽい\nです。',
+// 		start: { dateTime: start.toISOString() },
+// 		end: { dateTime: end.toISOString() },
+// 		reminders: {
+// 			useDefault: false,
+// 			overrides: [ { method: 'email', minutes: 24 * 60 }, { method: 'popup', minutes: 10 } ]
+// 		}
+// 	};
+// 	const events = await gcal.listEvents(-10, 20, { q: '[4126]' });
+// 	if (events.length > 0) {
+// 		event = events[0];
+// 		event.summary += '更新';
+// 	}
 
-// 	events = await gcal.listEvents(30, 60, { q: '0075' });
-// 	console.log(events);
+// 	await gcal.upsertEvent(event);
+// 	// let events = await gcal.listEvents(-1, 1);
+// 	// console.log(events);
+
+// 	// events = await gcal.listEvents(30, 60, { q: '0075' });
+// 	// console.log(events);
 // })();
 
 // dotenv.config();
