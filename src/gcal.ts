@@ -74,11 +74,37 @@ export class GoogleCalendar {
 		return result;
 	}
 
+	private toCalendarEvent(cal: calendar_v3.Schema$CalendarListEntry, src: calendar_v3.Schema$Event): CalendarEvent {
+		const ev: CalendarEvent = src as CalendarEvent;
+		if (src.start) {
+			if (src.start.dateTime) {
+				ev.startAt = new Date(src.start.dateTime);
+				ev.isAllDay = false;
+			}
+			if (src.start.date) {
+				ev.startAt = new Date(src.start.date + 'T00:00:00+09:00');
+				ev.isAllDay = true;
+				if (src.end) {
+					ev.endAt = new Date(src.end.date + 'T00:00:00+09:00');
+				} else {
+					ev.endAt = datefns.addDays(ev.startAt, 1);
+				}
+				ev.isAllDay = true;
+			}
+		}
+		ev.CalendarId = cal.id;
+		ev.CalendarSummary = cal.summary;
+		return ev;
+	}
 	/**
      * Lists the next 10 events on the user's primary calendar.
      * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
      */
-	public async listEvents(offsetToday: number, days: number = 1): Promise<CalendarEvent[]> {
+	public async listEvents(
+		offsetToday: number,
+		days: number = 1,
+		param: Partial<calendar_v3.Params$Resource$Events$List> = {}
+	): Promise<CalendarEvent[]> {
 		const api = await this.getCalendarAPI();
 
 		const calendars = await this.getCalendarList();
@@ -88,60 +114,43 @@ export class GoogleCalendar {
 		const timeMax = datefns.addDays(timeMin, days);
 		// trim bound
 		const listParam: calendar_v3.Params$Resource$Events$List = {
-			calendarId: 'primary',
-			timeMin: timeMin.toISOString(),
-			timeMax: timeMax.toISOString(),
-			maxResults: 5,
-			singleEvents: true,
-			orderBy: 'startTime'
+			...{
+				calendarId: 'primary',
+				timeMin: timeMin.toISOString(),
+				timeMax: timeMax.toISOString(),
+				maxResults: 5,
+				singleEvents: true,
+				orderBy: 'startTime'
+			},
+			...param
 		};
 
 		const events: CalendarEvent[] = [];
 		// process all calendars
 		for (const cal of calendars) {
 			listParam.calendarId = cal.id;
+			console.log(cal.summary + ':' + cal.id);
 			const cal_events = await this.getCalendarEvents(listParam);
 			if (cal_events) {
 				Array.prototype.push.apply(
 					events,
 					cal_events
-						.map((src) => {
-							const ev: CalendarEvent = src as CalendarEvent;
-							if (src.start) {
-								if (src.start.dateTime) {
-									ev.startAt = new Date(src.start.dateTime);
-									ev.isAllDay = false;
-								}
-								if (src.start.date) {
-									ev.startAt = new Date(src.start.date + 'T00:00:00+09:00');
-									ev.isAllDay = true;
-									if (src.end) {
-										ev.endAt = new Date(src.end.date + 'T00:00:00+09:00');
-									} else {
-										ev.endAt = datefns.addDays(ev.startAt, 1);
-									}
-									if (ev.endAt > timeMin) {
-										ev.isAllDay = true;
-									} else {
-										return null;
-									}
-								}
-							}
-							ev.CalendarId = cal.id;
-							ev.CalendarSummary = cal.summary;
-							return ev;
-						})
-						.filter((ev) => ev != null)
+						.map((src) => this.toCalendarEvent(cal, src))
+						.filter((ev) => !ev.isAllDay || ev.endAt > timeMin)
 				);
 			}
 		}
 		return events;
 	}
 }
-// test entry point
+// // test entry point
 // (async () => {
-//     const gcal = new GoogleCalendar();
-//     const events = await gcal.listEvents(-2, 1);
+// 	const gcal = new GoogleCalendar();
+// 	let events = await gcal.listEvents(-1, 1);
+// 	console.log(events);
+
+// 	events = await gcal.listEvents(30, 60, { q: '0075' });
+// 	console.log(events);
 // })();
 
 // dotenv.config();
