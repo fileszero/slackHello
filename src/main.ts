@@ -1,108 +1,96 @@
-import dotenv from 'dotenv';
-import * as datefns from 'date-fns';
-import { Botkit, BotkitMessage } from 'botkit';
-// import { SlackAdapter } from 'botbuilder-adapter-slack'
-import { SlackAdapter, SlackMessageTypeMiddleware, SlackBotWorker, SlackAdapterOptions } from 'botbuilder-adapter-slack';
-import { GoogleCalendar, CalendarEvent } from './gcal';
+import * as cron from 'node-cron';
+import { slackBot } from './slackBot';
+import { getScheduleNotice } from './scheduleNotice';
+import { sendRainNotice } from './yahooWeather';
+import config from './config';
 
-// run > ngrok http 3000 --log stdout
-// access https://api.slack.com/apps
-// open app -> Event Subscriptions -> set Request URL http://???????.ngrok.io/api/messages
-//
-// add to C:\Users\<user>\.ngrok2\ngrok.yml
-// trust_host_root_certs: true
-// root_cas: host
+const bot = new slackBot({});
 
-// Botkit for Slack Class Reference
-// https://botkit.ai/docs/v4/reference/slack.html
-// BotKit 4.xでのライブラリ仕様変更について
-// https://qiita.com/0622okakyo/items/07d1961697a4c620380a
+async function startBot() {
+    // /**
+    //  * RTM APIのイベント
+    //  * ないと「Error: Stale RTM connection, closing RTM」というエラーになる
+    //  */
+    // bot.controller.on('rtm_open', async (bot, message) => {
+    //     console.log('** The RTM api just connected!');
+    // });
+    // bot.controller.on('rtm_close', async (bot, message) => {
+    //     console.log('** The RTM api just closed');
+    // });
 
-dotenv.config();
+    // bot.controller.on('message', async (bot, message) => {
+    // 	await bot.reply(message, 'I heard a message!');
+    // });
 
-if (!process.env.SLACK_CLIENT_ID) {
-    console.log('Error: Specify SLACK_BOTTOKEN in environment');
-    process.exit(1);
-}
-console.log(process.env.SLACK_CLIENT_ID);
+    // say hi
+    bot.controller.hears('hi', [ 'direct_message', 'direct_mention', 'mention' ], async (bot, message) => {
+        await bot.reply(message, 'hello');
+    });
 
-const slackOption: SlackAdapterOptions = {
-    // clientId: process.env.SLACK_CLIENT_ID,
-    clientSigningSecret: process.env.SLACK_SIGNING_SECRET,
-    botToken: process.env.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN,    // https://botkit.ai/docs/v4/platforms/slack.html#multi-team-support
-    redirectUri: process.env.SLACK_REDIRECTURI || "",
-};
-const adapter = new SlackAdapter(slackOption).use(new SlackMessageTypeMiddleware());
+    bot.controller.hears('test', [ 'direct_message', 'direct_mention', 'mention' ], async (bot, message) => {
+        let msg = message.text || '';
+        msg = msg.replace(/test/i, 'てすと').trim();
+        await bot.reply(message, msg);
+    });
 
-const controller = new Botkit({
-    adapter: adapter
-});
-
-/**
- * RTM APIのイベント
- * ないと「Error: Stale RTM connection, closing RTM」というエラーになる
- */
-controller.on('rtm_open', async (bot, message) => {
-    console.log('** The RTM api just connected!');
-});
-controller.on('rtm_close', async (bot, message) => {
-    console.log('** The RTM api just closed');
-});
-
-controller.on('message', async (bot, message) => {
-    await bot.reply(message, 'I heard a message!');
-});
-
-// say hi
-controller.hears('hi', ['direct_message', 'direct_mention', 'mention'], async (bot, message) => {
-    await bot.reply(message, 'hello');
-});
-
-controller.hears('test', ['direct_message', 'direct_mention', 'mention'], async (bot, message) => {
-    let msg = message.text || "";
-    msg = msg.replace(/test/i, "").trim();
-    test(msg);
-});
-
-// default
-// 最後に記述してください。
-controller.hears('(.*)', ['direct_message', 'direct_mention', 'mention'], async (bot, message) => {
-    await bot.reply(message, 'なに??');
-});
-
-async function GetTodaysCalender() {
-    const gcal = new GoogleCalendar(process.env.GOOGLE_CLIENT_SECRET_PATH || "", process.env.GOOGLE_TOKEN_PATH || "")
-    // Authorize a client with credentials, then call the Google Calendar API.
-    const compEvent = (a: CalendarEvent, b: CalendarEvent) => a.startAt.getTime() - b.startAt.getTime();
-    const eventToString = (event: CalendarEvent) => {
-        let start = event.isAllDay ? datefns.format(event.startAt, "MM-DD") + " ALL" : datefns.format(event.startAt, "MM-DD HH:mm");
-        start = (start + ' '.repeat(12)).substr(0, 12);
-        return (`${start} - \`${event.summary}\``);
-    }
-
-
-    const todays_events = (await gcal.listEvents(0, 1)).sort(compEvent).map(eventToString).join("\n");
-    // const tomorrow_events = (await gcal.listEvents(1, 1)).sort(compEvent).map(eventToString).join("\n");
-
-    let message = "";
-    if (todays_events) {
-        message += "今日の予定は\n" + todays_events + "\nです。"
-    } else {
-        message += "今日の予定は *ありません* 。"
-    }
-
-    return message;
-
+    // default
+    // 最後に記述してください。
+    bot.controller.hears('(.*)', [ 'direct_message', 'direct_mention', 'mention' ], async (bot, message) => {
+        await bot.reply(message, 'なに??');
+    });
 }
 
+function startCRONJobs() {
+    // https://www.npmjs.com/package/node-cron#cron-syntax
+    //         # ┌────────────── second(optional)
+    //         # │ ┌──────────── minute
+    //         # │ │ ┌────────── hour
+    //         # │ │ │ ┌──────── day of month
+    //         # │ │ │ │ ┌────── month
+    //         # │ │ │ │ │ ┌──── day of week
+    //         # │ │ │ │ │ │
+    //         # │ │ │ │ │ │
+    //         # * * * * * *
+    const CRON_EVERY_5MINUTE = '*/5 * * * *';
+    const CRON_EVERY_MORNING = '5 6 * * *';
+    const CRON_EVERY_EVENING = '5 18 * * *';
+    const CRON_EVERY_HALFDAY = '5 6,18 * * *';
+    cron.schedule(CRON_EVERY_HALFDAY, async () => {
+        console.log('sendScheduleNotice CRON_EVERY_HALFDAY');
+        const message = await getScheduleNotice();
+        if (message) {
+            bot.sendMessage(config.slack.dmTarget, message);
+        }
+    });
+
+    cron.schedule(CRON_EVERY_5MINUTE, async () => {
+        console.log('sendRainNotice CRON_EVERY_5MINUTE');
+        const message = await sendRainNotice();
+        if (message) {
+            bot.sendMessage(config.slack.dmTarget, message);
+        }
+    });
+}
 (async () => {
-    //test(await GetTodaysCalender());
-    test("startPrivateConversation");
-})();
+    startBot();
+    // startCRONJobs();
+    bot.sendMessage(config.slack.dmTarget, 'bot started Direct message', {
+        username: '開始しますyo',
+        icon_emoji: ':robot_face:',
+        as_user: false
+    });
+    // bot.sendMessage("C7W0K6P5G", "bot started public channel message general");
+    // bot.sendMessage("GKJE67PGC", "bot started private channel message", { icon_emoji: ":woman:", as_user: false });
+    // bot.sendMessage("G7WRV4KS7", "bot started private channel message (not memeber)log4js");
+    // const message = await sendRainNotice();
+    // if (message) {
+    //     bot.sendDirectMessage(config.slack.dmTarget, message);
+    // }
+    // var msg = [":sunny:", ":rain_0_1:", ":rain_1_3:", ":rain_4_10:", ":rain_11_20:", ":rain_21:"].join(" ");
+    // slackBot.sendDirectMessage(controller, config.slack.dmTarget || '', "テスト\n" + msg);
 
-async function test(msg: string): Promise<void> {
-    let bot: SlackBotWorker = await controller.spawn("PROACTIVE") as SlackBotWorker;
-    await bot.startPrivateConversation("U7W20F25A"); //  function works only on platforms with multiple channels.
-    //await bot.startPrivateConversation("UKEG6SQP3");    // cozyjpn
-    await bot.say(msg);
-}
+    // const message = await sendRainNotice();
+    // if (message) {
+    //     slackBot.sendDirectMessage(controller, config.slack.dmTarget || '', message);
+    // }
+})();

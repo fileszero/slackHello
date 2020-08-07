@@ -6,12 +6,22 @@
 #
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
+
+# Environment values
+# ENV : base64 encoded .env file
+# GOOGLE_API_TOKEN : base64 encoded ./data/token.json
+# HOST_NAME : deploy target host
+# HOST_PORT : ssh port# of deploy target host
+# USER_NAME : user name on deploy target host
+# HOST_APPDIR: Directory name on target host /home/cozy/apps/slackHello
+
 version: 2
 jobs:
   build:
     branches:
       only:
         - master
+        - try_4+
     docker:
       # specify the version you desire here
       - image: circleci/node:10.13.0 #node:7.10 #https://circleci.com/docs/2.0/docker-image-tags.json
@@ -25,6 +35,19 @@ jobs:
 
     steps:
       - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "66:e0:26:29:99:63:4f:67:39:5a:7b:87:6e:05:3d:d9"
+      - run:
+          name: Decode env files
+          command: |
+            # echo ${ENV}
+            echo ${ENV} | base64 --decode > .env
+            echo ${GOOGLE_API_TOKEN}| base64 --decode > ./data/token.json
+            echo ${CONFIG_TS}| base64 --decode > ./src/config.ts
+            # pwd
+            # cat .env
+            ls -la ./data
 
       # Download and cache dependencies
       - restore_cache:
@@ -42,3 +65,17 @@ jobs:
 
       # run tests!
       - run: yarn build
+      - deploy:
+          name: deployment
+          command: |
+            ssh-keyscan -p ${HOST_PORT} ${HOST_NAME} >> ~/.ssh/known_hosts
+            sudo apt install -y rsync
+            # ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "node -v && npm -v" #
+            # ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "sudo n prune"
+            # ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "sudo n lts" # re-install npm
+            # ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "node -v && npm -v" #
+            # ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "npm install forever -g"
+            ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "cd ${HOST_APPDIR} && forever stop ./dest/main.js || true" # stop service
+            rsync -e "ssh -p ${HOST_PORT}" -avc  ~/repo/ ${USER_NAME}@${HOST_NAME}:${HOST_APPDIR} # deploy
+            ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "cd ${HOST_APPDIR} && forever start ./dest/main.js" # start service
+            # ssh ${USER_NAME}@${HOST_NAME} -p ${HOST_PORT} "cd ${HOST_APPDIR} && node ./dest/main.js" # start service
