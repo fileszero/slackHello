@@ -19,8 +19,8 @@ import config from "./config";
 dotenv.config();
 
 const slackOption: SlackAdapterOptions = {
-    clientSigningSecret: config.slack.signingSecret,
-    botToken: config.slack.botUserOauthAccessToken,    // https://botkit.ai/docs/v4/platforms/slack.html#multi-team-support
+    clientSigningSecret: process.env.SLACK_SIGNING_SECRET || config.slack.signingSecret,
+    botToken: process.env.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN || config.slack.botUserOauthAccessToken,    // https://botkit.ai/docs/v4/platforms/slack.html#multi-team-support
     redirectUri: "",
 };
 
