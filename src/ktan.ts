@@ -31,11 +31,28 @@ async function getKabuka(code: string): Promise<string> {
         });
     });
 }
+function getInnerText(element: CheerioElement) {
+    var text = '';
+    if (element.children) {
+        element.children.forEach((ele) => {
+            text += ' ' + getInnerText(ele);
+            text = text.trim();
+        });
+    }
+    if (element.type == 'text') {
+        text += ' ' + element.data;
+        text = text.trim();
+    }
+    return text.trim();
+}
 // debug
 (async () => {
-    //const html = await getKabuka('1348');
-    const html = fs.readFileSync('./data/ktsample.txt', {});
+    const html = await getKabuka('1348');
+    // const html = fs.readFileSync('./data/ktsample.html', {});
     // console.log(html);
     const $ = cheerio.load(html);
-    console.log($('title').text().split('：')[0]);
+    var msg = getInnerText($('.si_i1_1')[0]);
+    var price = getInnerText($('.si_i1_2')[0]);
+    price = price.replace('円', '').replace('前日比', '/').replace(' %', '%');
+    console.log(msg + '\n' + price);
 })();

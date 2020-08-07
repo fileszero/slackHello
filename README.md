@@ -37,3 +37,10 @@ trust_host_root_certs: true
 root_cas: host
 ```
 to C:\Users\<user>\.ngrok2\ngrok.yml
+
+## Mail alias
+/etc/aliases
+
+```
+slack: "|(cd /home/<user>/apps/slackHello; /usr/local/bin/node ./dest/mailConvert.js)"
+```
