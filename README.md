@@ -39,8 +39,39 @@ root_cas: host
 to C:\Users\<user>\.ngrok2\ngrok.yml
 
 ## Mail alias
-/etc/aliases
+### /etc/aliases
 
 ```
 slack: "|(cd /home/<user>/apps/slackHello; /usr/local/bin/node ./dest/mailConvert.js)"
 ```
+
+### /etc/postfix/main.cf
+```
+smtpd_sender_restrictions =
+...
+        regexp:/etc/postfix/access.regex,
+        reject
+...
+alias_maps = hash:/etc/aliases, regexp:/etc/aliases.regex
+...
+```
+
+### /etc/aliases.regex
+```
+/^slack\+(.*)(@example.com)?$/ "|(cd /var; cat >> /tmp/slackmail.txt)"
+```
+
+$  sudo newaliases
+
+### /etc/postfix/access.regex
+```
+/^guser\+caf_=slack\+(.*)=example\.com@gmail\.com$/   OK
+```
+sudo postmap /etc/postfix/access.regex
+
+
+$ sudo /etc/init.d/postfix restart
+
+## mail header
+X-Original-To: slack+fromgmail@example.com
+Delivered-To: slack+fromgmail@example.com
